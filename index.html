@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f4e9">
+<title>Lapka</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Mulish:wght@400;500&display=swap">
+<style>
+
+/* Layout: one phone-width column (like the original iPhone app), centered on desktop; sheets slide over it. */
+:root{
+  --paper:#f5f4e9;      /* original tableBackgroundColor 0.961 0.957 0.912 */
+  --card:#fbfaf3;
+  --ink:#151515;
+  --muted:#7b7a70;
+  --line:#e2e0d2;
+  --night:#151515;       /* sensor band */
+  --on-night:#f5f4e9;
+  --good:#5fc35a; --almost:#e9c13f; --bad:#e2532f;   /* card-filter-pass icons */
+  --cyan:#6fd6da;        /* splash art */
+  --display:"Jost",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --text:"Mulish",-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:var(--text);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.app{max-width:460px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
+header.top{display:flex;align-items:center;gap:8px;padding-block:18px 10px}
+.wordmark{font-family:var(--display);font-size:30px;letter-spacing:-.8px;line-height:1}
+.wordmark small{display:block;font-family:var(--text);font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.top .sp{flex:1}
+.iconbtn{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;display:grid;place-items:center;padding:0}
+.iconbtn svg{width:20px;height:20px}
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-height:20px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none}
+.dot.on{background:var(--good)} .dot.warn{background:var(--almost)} .dot.err{background:var(--bad)}
+
+/* ---- welcome ---- */
+.hero{background:var(--night);color:var(--on-night);border-radius:22px;padding:26px 22px 22px;margin-top:8px;display:flex;flex-direction:column;gap:18px}
+.hero .devices{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;height:150px}
+.hero .devices img{height:100%;width:auto;flex:1 1 0;object-fit:contain;min-width:0}
+.hero .devices img:nth-child(2){height:78%} .hero .devices img:nth-child(3){height:62%} .hero .devices img:nth-child(4){height:78%}
+.hero h1{font-family:var(--display);font-weight:500;font-size:27px;line-height:1.1;letter-spacing:-.5px;margin:0;text-wrap:balance}
+.hero p{margin:0;color:#c9c8bd;font-size:14px}
+.pill{border:0;border-radius:999px;padding:13px 22px;background:var(--ink);color:var(--paper);font-family:var(--display);font-size:16px}
+.pill.light{background:var(--paper);color:var(--ink)}
+.pill.ghost{background:transparent;border:1.5px solid currentColor}
+.pill:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.demo-pick{display:flex;gap:8px;flex-wrap:wrap}
+.demo-pick button{border:1.5px solid #4a4a46;background:transparent;color:var(--on-night);border-radius:999px;padding:8px 14px;font-size:13px}
+.tips{margin-top:14px;display:grid;gap:10px;font-size:13.5px;color:#4a4943}
+.tips div{display:flex;gap:10px}
+.tips b{font-family:var(--display);font-weight:500;color:var(--ink);flex:0 0 22px}
+
+/* ---- identification ---- */
+.ident{display:flex;flex-direction:column;align-items:center;gap:18px;padding-block:40px 20px;text-align:center}
+.bigbtn{width:150px;height:150px;border-radius:50%;border:0;background:var(--ink);color:var(--paper);font-family:var(--display);font-size:20px;position:relative;display:grid;place-items:center;transition:transform .15s}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn svg.ring{position:absolute;inset:-9px;width:168px;height:168px;transform:rotate(-90deg);pointer-events:none}
+.bigbtn svg.ring circle{fill:none;stroke-width:3}
+.bigbtn .lbl{display:flex;flex-direction:column;align-items:center;line-height:1.05}
+.bigbtn .lbl small{font-family:var(--text);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;opacity:.65;margin-top:6px}
+.blink{animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.55}}
+.bits{display:flex;gap:10px;font-family:var(--display);font-size:20px}
+.bits span{width:38px;height:44px;border-radius:10px;border:1.5px solid var(--line);display:grid;place-items:center;color:var(--muted)}
+.bits span.cur{border-color:var(--ink);color:var(--ink)}
+.bits span.v1{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.bits span.v0{color:var(--ink);border-color:var(--ink)}
+.idnote{font-size:13px;color:var(--muted);max-width:32ch}
+
+/* ---- sensor ---- */
+.band{background:var(--night);color:var(--on-night);border-radius:22px;padding:18px 20px;display:flex;gap:16px;align-items:center;margin-top:6px}
+.band img{height:86px;width:auto;flex:none}
+.band .t{min-width:0;flex:1}
+.band h2{margin:0;font-family:var(--display);font-weight:500;font-size:24px;letter-spacing:-.4px}
+.band p{margin:2px 0 0;font-size:12.5px;color:#bdbcb1}
+.band .x{background:transparent;border:1.5px solid #55554f;color:var(--on-night);border-radius:999px;padding:6px 12px;font-size:12px;flex:none;align-self:flex-start}
+.meter{display:flex;flex-direction:column;align-items:center;text-align:center;padding-block:22px 6px;gap:4px;position:relative}
+.value{font-family:var(--display);font-size:84px;line-height:.95;letter-spacing:-3px;font-variant-numeric:tabular-nums}
+.value.dim{color:#c6c4b6}
+.unit{font-size:13px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.sub{display:flex;gap:22px;justify-content:center;margin-top:12px;font-variant-numeric:tabular-nums}
+.sub div{display:flex;flex-direction:column;align-items:center}
+.sub b{font-family:var(--display);font-weight:500;font-size:22px}
+.sub span{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.verdict{display:flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14px;margin-top:12px}
+.verdict img{width:26px;height:26px}
+#particles{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;padding:3px;gap:3px;margin-top:4px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:7px 16px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.controls{display:flex;flex-direction:column;align-items:center;gap:12px;padding-block:14px 8px}
+.hint{font-size:13.5px;color:#4a4943;text-align:center;max-width:34ch;min-height:2.9em}
+.after{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.small{padding:9px 16px;font-size:14px}
+
+.filters h3,.sheet h3{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);font-weight:500;margin:22px 0 10px}
+.strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity;margin-inline:-4px;padding-inline:4px}
+.chip{flex:0 0 84px;scroll-snap-align:start;border:1.5px solid transparent;background:var(--card);border-radius:16px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;line-height:1.15;text-align:center}
+.chip img{width:44px;height:44px}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:#fff}
+.limit{font-size:13px;color:var(--muted);margin-top:4px}
+
+/* ---- sheets ---- */
+.scrim{position:fixed;inset:0;background:rgba(21,21,21,.35);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--paper);border-radius:22px 22px 0 0;z-index:21;
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:14px calc(24px + env(safe-area-inset-bottom,0px));
+  max-width:520px;margin:0 auto;box-shadow:0 -10px 40px rgba(0,0,0,.12)}
+.sheet .grab{width:44px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.sheet h2{font-family:var(--display);font-weight:500;font-size:22px;margin:4px 0 0}
+.field{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding-block:10px;border-bottom:1px solid var(--line)}
+.field label{font-size:14px}
+.field .help{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.field select,.field input[type=number]{font:inherit;font-size:14px;padding:7px 9px;border-radius:10px;border:1px solid var(--line);background:var(--card);max-width:200px}
+.field input[type=range]{accent-color:var(--ink);width:150px}
+.diag{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;white-space:pre-wrap;overflow-x:auto;margin:0}
+.log{display:flex;flex-direction:column;gap:8px}
+.entry{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.entry img{width:40px;height:40px}
+.entry .v{font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums;text-align:right}
+.entry .m{font-size:12px;color:var(--muted)}
+.entry .pass{width:22px;height:22px;vertical-align:-5px}
+.empty{color:var(--muted);font-size:14px;padding-block:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-size:14px;z-index:30;max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){.blink{animation:none}.bigbtn{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="wordmark">lapka<small>personal environment monitor</small></div>
+    <div class="sp"></div>
+    <button class="iconbtn" id="btnLog" aria-label="Журнал измерений" title="Журнал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 6h14M5 12h14M5 18h9"/></svg></button>
+    <button class="iconbtn" id="btnSettings" aria-label="Настройки и диагностика" title="Настройки"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8"/></svg></button>
+  </header>
+  <div class="status" id="status"><span class="dot"></span><span>Микрофон выключен</span></div>
+  <main id="view"></main>
+</div>
+<div id="layer"></div>
+
+<script>
+const ASSETS = {"f-daily": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4%207a2%202%200%200%201%202%20-2h12a2%202%200%200%201%202%202v12a2%202%200%200%201%20-2%202h-12a2%202%200%200%201%20-2%20-2v-12z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%203v4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%203v4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4%2011h16%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M11%2015h1%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2015v3%22%20/%3E%0A%3C/svg%3E", "f-home": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M5%2012l-2%200l9%20-9l9%209l-2%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5%2012v7a2%202%200%200%200%202%202h10a2%202%200%200%200%202%20-2v-7%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2021v-6a2%202%200%200%201%202%20-2h2a2%202%200%200%201%202%202v6%22%20/%3E%0A%3C/svg%3E", "f-baby": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M8%2019m-2%200a2%202%200%201%200%204%200a2%202%200%201%200%20-4%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M18%2019m-2%200a2%202%200%201%200%204%200a2%202%200%201%200%20-4%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M2%205h2.5l1.632%204.897a6%206%200%200%200%205.693%204.103h2.675a5.5%205.5%200%200%200%200%20-11h-.5v6%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M6%209h14%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2017l1%20-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%2014l1%203%22%20/%3E%0A%3C/svg%3E", "f-airplane": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M16%2010h4a2%202%200%200%201%200%204h-4l-4%207h-3l2%20-7h-4l-2%202h-3l2%20-4l-2%20-4h3l2%202h4l-2%20-7h3z%22%20/%3E%0A%3C/svg%3E", "f-natural": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M16%205l3%203l-2%201l4%204l-3%201l4%204h-9%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M15%2021l0%20-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%2013l-2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%2012l2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%2021v-13%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.824%2016a3%203%200%200%201%20-2.743%20-3.69a3%203%200%200%201%20.304%20-4.833a3%203%200%200%201%204.615%20-3.707a3%203%200%200%201%204.614%203.707a3%203%200%200%201%20.305%204.833a3%203%200%200%201%20-2.919%203.695h-4z%22%20/%3E%0A%3C/svg%3E", "f-water": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M7.502%2019.423c2.602%202.105%206.395%202.105%208.996%200c2.602%20-2.105%203.262%20-5.708%201.566%20-8.546l-4.89%20-7.26c-.42%20-.625%20-1.287%20-.803%20-1.936%20-.397a1.376%201.376%200%200%200%20-.41%20.397l-4.893%207.26c-1.695%202.838%20-1.035%206.441%201.567%208.546z%22%20/%3E%0A%3C/svg%3E", "f-travel": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M12%2018.5l-3%20-1.5l-6%203v-13l6%20-3l6%203l6%20-3v7.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%204v13%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M15%207v5.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M21.121%2020.121a3%203%200%201%200%20-4.242%200c.418%20.419%201.125%201.045%202.121%201.879c1.051%20-.89%201.759%20-1.516%202.121%20-1.879z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M19%2018v.01%22%20/%3E%0A%3C/svg%3E", "f-x-ray": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M13.5%2014.6l3%205.19a9%209%200%200%200%204.5%20-7.79h-6a3%203%200%200%201%20-1.5%202.6%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M13.5%209.4l3%20-5.19a9%209%200%200%200%20-9%200l3%205.19a3%203%200%200%201%203%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.5%2014.6l-3%205.19a9%209%200%200%201%20-4.5%20-7.79h6a3%203%200%200%200%201.5%202.6%22%20/%3E%0A%3C/svg%3E", "f-office_fields": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M3%207m0%202a2%202%200%200%201%202%20-2h14a2%202%200%200%201%202%202v9a2%202%200%200%201%20-2%202h-14a2%202%200%200%201%20-2%20-2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%207v-2a2%202%200%200%201%202%20-2h4a2%202%200%200%201%202%202v2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2012l0%20.01%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3%2013a20%2020%200%200%200%2018%200%22%20/%3E%0A%3C/svg%3E", "f-sleep": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M7%209m-2%200a2%202%200%201%200%204%200a2%202%200%201%200%20-4%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M22%2017v-3h-20%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M2%208v9%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2014h10v-2a3%203%200%200%200%20-3%20-3h-7v5z%22%20/%3E%0A%3C/svg%3E", "f-kitchen": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M19%203v12h-5c-.023%20-3.681%20.184%20-7.406%205%20-12zm0%2012v6h-1v-3m-10%20-14v17m-3%20-17v3a3%203%200%201%200%206%200v-3%22%20/%3E%0A%3C/svg%3E", "f-mobile": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M6%205a2%202%200%200%201%202%20-2h8a2%202%200%200%201%202%202v14a2%202%200%200%201%20-2%202h-8a2%202%200%200%201%20-2%20-2v-14z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M11%204h2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2017v.01%22%20/%3E%0A%3C/svg%3E", "f-cellular-antenna": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M20%204v8%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%204.5v7%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%205v16%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%205.5v5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4%206v4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M20%208h-16%22%20/%3E%0A%3C/svg%3E", "f-zen": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M12%204m-1%200a1%201%200%201%200%202%200a1%201%200%201%200%20-2%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4%2020h4l1.5%20-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17%2020l-1%20-5h-5l1%20-7%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4%2010l4%20-1l4%20-1l4%201.5l4%201.5%22%20/%3E%0A%3C/svg%3E", "f-lamp": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M3%2012h1m8%20-9v1m8%208h1m-15.4%20-6.4l.7%20.7m12.1%20-.7l-.7%20.7%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2016a5%205%200%201%201%206%200a3.5%203.5%200%200%200%20-1%203a2%202%200%200%201%20-4%200a3.5%203.5%200%200%200%20-1%20-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9.7%2017l4.6%200%22%20/%3E%0A%3C/svg%3E", "f-wires": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M9.785%206l8.215%208.215l-2.054%202.054a5.81%205.81%200%201%201%20-8.215%20-8.215l2.054%20-2.054z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4%2020l3.5%20-3.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M15%204l-3.5%203.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M20%209l-3.5%203.5%22%20/%3E%0A%3C/svg%3E", "f-transport": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M6%2017m-2%200a2%202%200%201%200%204%200a2%202%200%201%200%20-4%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M18%2017m-2%200a2%202%200%201%200%204%200a2%202%200%201%200%20-4%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4%2017h-2v-11a1%201%200%200%201%201%20-1h14a5%207%200%200%201%205%207v5h-2m-4%200h-8%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%205l1.5%207l4.5%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M2%2010l15%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M7%205l0%205%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%205l0%205%22%20/%3E%0A%3C/svg%3E", "f-lf-fields": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M21%2012h-2c-.894%200%20-1.662%20-.857%20-1.761%20-2c-.296%20-3.45%20-.749%20-6%20-2.749%20-6s-2.5%203.582%20-2.5%208s-.5%208%20-2.5%208s-2.452%20-2.547%20-2.749%20-6c-.1%20-1.147%20-.867%20-2%20-1.763%20-2h-2%22%20/%3E%0A%3C/svg%3E", "f-hi-fields": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M12%2018l.01%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9.172%2015.172a4%204%200%200%201%205.656%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M6.343%2012.343a8%208%200%200%201%2011.314%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3.515%209.515c4.686%20-4.687%2012.284%20-4.687%2017%200%22%20/%3E%0A%3C/svg%3E", "f-office_humidity": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M3%207m0%202a2%202%200%200%201%202%20-2h14a2%202%200%200%201%202%202v9a2%202%200%200%201%20-2%202h-14a2%202%200%200%201%20-2%20-2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%207v-2a2%202%200%200%201%202%20-2h4a2%202%200%200%201%202%202v2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2012l0%20.01%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3%2013a20%2020%200%200%200%2018%200%22%20/%3E%0A%3C/svg%3E", "f-public": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M9%207m-4%200a4%204%200%201%200%208%200a4%204%200%201%200%20-8%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3%2021v-2a4%204%200%200%201%204%20-4h4a4%204%200%200%201%204%204v2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%203.13a4%204%200%200%201%200%207.75%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M21%2021v-2a4%204%200%200%200%20-3%20-3.85%22%20/%3E%0A%3C/svg%3E", "f-outdoor": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M12%2013l-2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2012l2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2021v-13%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9.824%2016a3%203%200%200%201%20-2.743%20-3.69a3%203%200%200%201%20.304%20-4.833a3%203%200%200%201%204.615%20-3.707a3%203%200%200%201%204.614%203.707a3%203%200%200%201%20.305%204.833a3%203%200%200%201%20-2.919%203.695h-4z%22%20/%3E%0A%3C/svg%3E", "f-wine": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M10%205h4v-2a1%201%200%200%200%20-1%20-1h-2a1%201%200%200%200%20-1%201v2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M14%203.5c0%201.626%20.507%203.212%201.45%204.537l.05%20.07a8.093%208.093%200%200%201%201.5%204.694v6.199a2%202%200%200%201%20-2%202h-6a2%202%200%200%201%20-2%20-2v-6.2c0%20-1.682%20.524%20-3.322%201.5%20-4.693l.05%20-.07a7.823%207.823%200%200%200%201.45%20-4.537%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M7%2014.803a2.4%202.4%200%200%200%201%20-.803a2.4%202.4%200%200%201%202%20-1a2.4%202.4%200%200%201%202%201a2.4%202.4%200%200%200%202%201a2.4%202.4%200%200%200%202%20-1a2.4%202.4%200%200%201%201%20-.805%22%20/%3E%0A%3C/svg%3E", "f-cheese": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4.519%2020.008l16.481%20-.008v-3.5a2%202%200%201%201%200%20-4v-3.5h-16.722%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M21%209l-9.385%20-4.992c-2.512%20.12%20-4.758%201.42%20-6.327%203.425c-1.423%201.82%20-2.288%204.221%20-2.288%206.854c0%202.117%20.56%204.085%201.519%205.721%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M15%2013v.01%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%2013v.01%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M11%2016v.01%22%20/%3E%0A%3C/svg%3E", "f-conditioner": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M8%2016a3%203%200%200%201%20-3%203%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%2016a3%203%200%200%200%203%203%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2016v4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3%205m0%202a2%202%200%200%201%202%20-2h14a2%202%200%200%201%202%202v4a2%202%200%200%201%20-2%202h-14a2%202%200%200%201%20-2%20-2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M7%2013v-3a1%201%200%200%201%201%20-1h8a1%201%200%200%201%201%201v3%22%20/%3E%0A%3C/svg%3E", "f-allergy": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M12%2012m-5%200a5%205%200%201%200%2010%200a5%205%200%201%200%20-10%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%207v-4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M11%203h2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M15.536%208.464l2.828%20-2.828%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17.657%204.929l1.414%201.414%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17%2012h4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M21%2011v2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M15.535%2015.536l2.829%202.828%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M19.071%2017.657l-1.414%201.414%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2017v4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M13%2021h-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8.465%2015.536l-2.829%202.828%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M6.343%2019.071l-1.413%20-1.414%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M7%2012h-4%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3%2013v-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8.464%208.464l-2.828%20-2.828%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4.929%206.343l1.414%20-1.413%22%20/%3E%0A%3C/svg%3E", "f-hot": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M12%2012m-4%200a4%204%200%201%200%208%200a4%204%200%201%200%20-8%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3%2012h1m8%20-9v1m8%208h1m-9%208v1m-6.4%20-15.4l.7%20.7m12.1%20-.7l-.7%20.7m0%2011.4l.7%20.7m-12.1%20-.7l-.7%20.7%22%20/%3E%0A%3C/svg%3E", "f-cold": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M10%204l2%201l2%20-1%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%202v6.5l3%201.72%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17.928%206.268l.134%202.232l1.866%201.232%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M20.66%207l-5.629%203.25l.01%203.458%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M19.928%2014.268l-1.866%201.232l-.134%202.232%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M20.66%2017l-5.629%20-3.25l-2.99%201.738%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M14%2020l-2%20-1l-2%201%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2022v-6.5l-3%20-1.72%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M6.072%2017.732l-.134%20-2.232l-1.866%20-1.232%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3.34%2017l5.629%20-3.25l-.01%20-3.458%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M4.072%209.732l1.866%20-1.232l.134%20-2.232%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M3.34%207l5.629%203.25l2.99%20-1.738%22%20/%3E%0A%3C/svg%3E", "f-apple": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4%2011.319c0%203.102%20.444%205.319%202.222%207.978c1.351%201.797%203.156%202.247%205.08%20.988c.426%20-.268%20.97%20-.268%201.397%200c1.923%201.26%203.728%20.809%205.079%20-.988c1.778%20-2.66%202.222%20-4.876%202.222%20-7.977c0%20-2.661%20-1.99%20-5.32%20-4.444%20-5.32c-1.267%200%20-2.41%20.693%20-3.22%201.44a.5%20.5%200%200%201%20-.672%200c-.809%20-.746%20-1.953%20-1.44%20-3.22%20-1.44c-2.454%200%20-4.444%202.66%20-4.444%205.319%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M7%2012c0%20-1.47%20.454%20-2.34%201.5%20-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%207c0%20-1.2%20.867%20-4%203%20-4%22%20/%3E%0A%3C/svg%3E", "f-pear": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4%2011.319c0%203.102%20.444%205.319%202.222%207.978c1.351%201.797%203.156%202.247%205.08%20.988c.426%20-.268%20.97%20-.268%201.397%200c1.923%201.26%203.728%20.809%205.079%20-.988c1.778%20-2.66%202.222%20-4.876%202.222%20-7.977c0%20-2.661%20-1.99%20-5.32%20-4.444%20-5.32c-1.267%200%20-2.41%20.693%20-3.22%201.44a.5%20.5%200%200%201%20-.672%200c-.809%20-.746%20-1.953%20-1.44%20-3.22%20-1.44c-2.454%200%20-4.444%202.66%20-4.444%205.319%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M7%2012c0%20-1.47%20.454%20-2.34%201.5%20-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%207c0%20-1.2%20.867%20-4%203%20-4%22%20/%3E%0A%3C/svg%3E", "f-banana": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M18%204a2%202%200%200%201%201.185%203.611c1.55%202.94%20.873%206.917%20-1.892%209.682c-2.765%202.765%20-6.743%203.442%20-9.682%201.892a2%202%200%201%201%20-2.796%20-2.796c-1.55%20-2.94%20-.873%20-6.917%201.892%20-9.682c2.765%20-2.765%206.743%20-3.442%209.682%20-1.892a2%202%200%200%201%201.611%20-.815z%22%20/%3E%0A%3C/svg%3E", "f-strawberry": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M7.5%2016.5m-3.5%200a3.5%203.5%200%201%200%207%200a3.5%203.5%200%201%200%20-7%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17%2018m-3%200a3%203%200%201%200%206%200a3%203%200%201%200%20-6%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2013c.366%20-2%201.866%20-3.873%204.5%20-5.6%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17%2015c-1.333%20-2.333%20-2.333%20-5.333%20-1%20-9%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5%206c3.667%20-2.667%207.333%20-2.667%2011%200c-3.667%202.667%20-7.333%202.667%20-11%200%22%20/%3E%0A%3C/svg%3E", "f-melon": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M17.536%203.393c3.905%203.906%203.905%2010.237%200%2014.143c-3.906%203.905%20-10.237%203.905%20-14.143%200l14.143%20-14.143%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.868%2015.06a6.5%206.5%200%200%200%209.193%20-9.192%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464l4.597%204.597%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464v6.364%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464h6.364%22%20/%3E%0A%3C/svg%3E", "f-watermelon": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M17.536%203.393c3.905%203.906%203.905%2010.237%200%2014.143c-3.906%203.905%20-10.237%203.905%20-14.143%200l14.143%20-14.143%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.868%2015.06a6.5%206.5%200%200%200%209.193%20-9.192%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464l4.597%204.597%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464v6.364%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464h6.364%22%20/%3E%0A%3C/svg%3E", "f-tomato": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M7.5%2016.5m-3.5%200a3.5%203.5%200%201%200%207%200a3.5%203.5%200%201%200%20-7%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17%2018m-3%200a3%203%200%201%200%206%200a3%203%200%201%200%20-6%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2013c.366%20-2%201.866%20-3.873%204.5%20-5.6%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M17%2015c-1.333%20-2.333%20-2.333%20-5.333%20-1%20-9%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5%206c3.667%20-2.667%207.333%20-2.667%2011%200c-3.667%202.667%20-7.333%202.667%20-11%200%22%20/%3E%0A%3C/svg%3E", "f-cucumber": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M13%2011c0%202.21%20-2.239%204%20-5%204s-5%20-1.79%20-5%20-4a8%208%200%201%200%2016%200a3%203%200%200%200%20-6%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%208c0%20-2%202%20-4%204%20-4%22%20/%3E%0A%3C/svg%3E", "f-sweet-pepper": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M13%2011c0%202.21%20-2.239%204%20-5%204s-5%20-1.79%20-5%20-4a8%208%200%201%200%2016%200a3%203%200%200%200%20-6%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%208c0%20-2%202%20-4%204%20-4%22%20/%3E%0A%3C/svg%3E", "f-eggplant": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M13%2011c0%202.21%20-2.239%204%20-5%204s-5%20-1.79%20-5%20-4a8%208%200%201%200%2016%200a3%203%200%200%200%20-6%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%208c0%20-2%202%20-4%204%20-4%22%20/%3E%0A%3C/svg%3E", "f-potato": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M19%2014.083c0%204.154%20-2.966%206.74%20-7%206.917c-4.2%200%20-7%20-2.763%20-7%20-6.917c0%20-5.538%203.5%20-11.09%207%20-11.083c3.5%20.007%207%205.545%207%2011.083z%22%20/%3E%0A%3C/svg%3E", "f-carrot": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M3%2021s9.834%20-3.489%2012.684%20-6.34a4.487%204.487%200%200%200%200%20-6.344a4.483%204.483%200%200%200%20-6.342%200c-2.86%202.861%20-6.347%2012.689%20-6.347%2012.689z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2013l-1.5%20-1.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%2014l-2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M22%208s-1.14%20-2%20-3%20-2c-1.406%200%20-3%202%20-3%202s1.14%202%203%202s3%20-2%203%20-2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%202s-2%201.14%20-2%203s2%203%202%203s2%20-1.577%202%20-3c0%20-1.86%20-2%20-3%20-2%20-3z%22%20/%3E%0A%3C/svg%3E", "f-onion": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M19%206.84a2.007%202.007%200%200%201%201%201.754v6.555c0%20.728%20-.394%201.4%20-1.03%201.753l-6%203.844a1.995%201.995%200%200%201%20-1.94%200l-6%20-3.844a2.006%202.006%200%200%201%20-1.03%20-1.752v-6.557c0%20-.728%20.394%20-1.399%201.03%20-1.753l6%20-3.582a2.049%202.049%200%200%201%202%200l6%203.582h-.03z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2012m-3%200a3%203%200%201%200%206%200a3%203%200%201%200%20-6%200%22%20/%3E%0A%3C/svg%3E", "f-avocado": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M17.8%2014.04a3.905%203.905%200%200%201%201.337%20-2.075c1.195%20-.985%201.816%20-2.285%201.863%20-3.902c-.047%20-1.43%20-.54%20-2.626%20-1.477%20-3.586c-.96%20-.938%20-2.156%20-1.43%20-3.585%20-1.477c-1.618%20.047%20-2.918%20.668%20-3.903%201.863c-.562%20.68%20-1.254%201.125%20-2.074%201.336c-.938%20.188%20-1.828%20.48%20-2.672%20.88c-.844%20.398%20-1.559%20.878%20-2.144%201.44c-1.43%201.501%20-2.145%203.224%20-2.145%205.169c0%201.946%20.715%203.668%202.145%205.168c1.5%201.429%203.222%202.144%205.168%202.144c1.945%200%203.667%20-.715%205.167%20-2.145c.563%20-.585%201.055%20-1.3%201.477%20-2.144c.398%20-.844%20.68%20-1.723%20.844%20-2.637v-.035z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.87%2010.036c-.942%20.112%20-1.794%20.538%20-2.556%201.278c-.74%20.762%20-1.166%201.614%20-1.278%202.556c-.135%20.92%20.112%201.704%20.74%202.354c.65%20.628%201.435%20.875%202.354%20.74c.942%20-.112%201.794%20-.538%202.556%20-1.278c.74%20-.762%201.166%20-1.614%201.278%20-2.556c.135%20-.92%20-.112%20-1.704%20-.74%20-2.354c-.65%20-.628%20-1.435%20-.875%20-2.354%20-.74z%22%20/%3E%0A%3C/svg%3E", "f-pumpkin": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M17.536%203.393c3.905%203.906%203.905%2010.237%200%2014.143c-3.906%203.905%20-10.237%203.905%20-14.143%200l14.143%20-14.143%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.868%2015.06a6.5%206.5%200%200%200%209.193%20-9.192%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464l4.597%204.597%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464v6.364%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M10.464%2010.464h6.364%22%20/%3E%0A%3C/svg%3E", "f-beet": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M3%2021s9.834%20-3.489%2012.684%20-6.34a4.487%204.487%200%200%200%200%20-6.344a4.483%204.483%200%200%200%20-6.342%200c-2.86%202.861%20-6.347%2012.689%20-6.347%2012.689z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2013l-1.5%20-1.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%2014l-2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M22%208s-1.14%20-2%20-3%20-2c-1.406%200%20-3%202%20-3%202s1.14%202%203%202s3%20-2%203%20-2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%202s-2%201.14%20-2%203s2%203%202%203s2%20-1.577%202%20-3c0%20-1.86%20-2%20-3%20-2%20-3z%22%20/%3E%0A%3C/svg%3E", "f-radish": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M3%2021s9.834%20-3.489%2012.684%20-6.34a4.487%204.487%200%200%200%200%20-6.344a4.483%204.483%200%200%200%20-6.342%200c-2.86%202.861%20-6.347%2012.689%20-6.347%2012.689z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9%2013l-1.5%20-1.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%2014l-2%20-2%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M22%208s-1.14%20-2%20-3%20-2c-1.406%200%20-3%202%20-3%202s1.14%202%203%202s3%20-2%203%20-2z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M16%202s-2%201.14%20-2%203s2%203%202%203s2%20-1.577%202%20-3c0%20-1.86%20-2%20-3%20-2%20-3z%22%20/%3E%0A%3C/svg%3E", "f-broccoli": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4%2011h16a1%201%200%200%201%201%201v.5c0%201.5%20-2.517%205.573%20-4%206.5v1a1%201%200%200%201%20-1%201h-8a1%201%200%200%201%20-1%20-1v-1c-1.687%20-1.054%20-4%20-5%20-4%20-6.5v-.5a1%201%200%200%201%201%20-1z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M18.5%2011c.351%20-1.017%20.426%20-2.236%20.5%20-3.714v-1.286h-2.256c-2.83%200%20-4.616%20.804%20-5.64%202.076%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.255%2011.008a12.204%2012.204%200%200%201%20-.255%20-2.008v-1h1.755c.98%200%201.801%20.124%202.479%20.35%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%208l1%20-4l4%202.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M13%2011v-.5a2.5%202.5%200%201%200%20-5%200v.5%22%20/%3E%0A%3C/svg%3E", "f-cauliflower": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4%2011h16a1%201%200%200%201%201%201v.5c0%201.5%20-2.517%205.573%20-4%206.5v1a1%201%200%200%201%20-1%201h-8a1%201%200%200%201%20-1%20-1v-1c-1.687%20-1.054%20-4%20-5%20-4%20-6.5v-.5a1%201%200%200%201%201%20-1z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M18.5%2011c.351%20-1.017%20.426%20-2.236%20.5%20-3.714v-1.286h-2.256c-2.83%200%20-4.616%20.804%20-5.64%202.076%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.255%2011.008a12.204%2012.204%200%200%201%20-.255%20-2.008v-1h1.755c.98%200%201.801%20.124%202.479%20.35%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%208l1%20-4l4%202.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M13%2011v-.5a2.5%202.5%200%201%200%20-5%200v.5%22%20/%3E%0A%3C/svg%3E", "f-lettuce": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M4%2011h16a1%201%200%200%201%201%201v.5c0%201.5%20-2.517%205.573%20-4%206.5v1a1%201%200%200%201%20-1%201h-8a1%201%200%200%201%20-1%20-1v-1c-1.687%20-1.054%20-4%20-5%20-4%20-6.5v-.5a1%201%200%200%201%201%20-1z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M18.5%2011c.351%20-1.017%20.426%20-2.236%20.5%20-3.714v-1.286h-2.256c-2.83%200%20-4.616%20.804%20-5.64%202.076%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M5.255%2011.008a12.204%2012.204%200%200%201%20-.255%20-2.008v-1h1.755c.98%200%201.801%20.124%202.479%20.35%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M8%208l1%20-4l4%202.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M13%2011v-.5a2.5%202.5%200%201%200%20-5%200v.5%22%20/%3E%0A%3C/svg%3E", "f-celery": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M2%209a10%2010%200%201%200%2020%200%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2019a10%2010%200%200%201%2010%20-10%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M2%209a10%2010%200%200%201%2010%2010%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%204a9.7%209.7%200%200%201%202.99%207.5%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M9.01%2011.5a9.7%209.7%200%200%201%202.99%20-7.5%22%20/%3E%0A%3C/svg%3E", "f-corn": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M16.5%2015a4.5%204.5%200%200%200%20-4.5%204.5m4.5%20-8.5a4.5%204.5%200%200%200%20-4.5%204.5m4.5%20-8.5a4.5%204.5%200%200%200%20-4.5%204.5m-4%203.5c2.21%200%204%202.015%204%204.5m-4%20-8.5c2.21%200%204%202.015%204%204.5m-4%20-8.5c2.21%200%204%202.015%204%204.5m0%20-7.5v6%22%20/%3E%0A%3C/svg%3E", "f-asparagus": "data:image/svg+xml;charset=utf-8,%3Csvg%0A%20%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%0A%20%20width%3D%2224%22%0A%20%20height%3D%2224%22%0A%20%20viewBox%3D%220%200%2024%2024%22%0A%20%20fill%3D%22none%22%0A%20%20stroke%3D%22%23151515%22%0A%20%20stroke-width%3D%221.6%22%0A%20%20stroke-linecap%3D%22round%22%0A%20%20stroke-linejoin%3D%22round%22%0A%20%20%0A%3E%0A%20%20%3Cpath%20stroke%3D%22none%22%20d%3D%22M0%200h24v24H0z%22%20fill%3D%22none%22/%3E%0A%20%20%3Cpath%20d%3D%22M7%2015h10v4a2%202%200%200%201%20-2%202h-6a2%202%200%200%201%20-2%20-2v-4z%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%209a6%206%200%200%200%20-6%20-6h-3v2a6%206%200%200%200%206%206h3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2011a6%206%200%200%201%206%20-6h3v1a6%206%200%200%201%20-6%206h-3%22%20/%3E%0A%20%20%3Cpath%20d%3D%22M12%2015l0%20-6%22%20/%3E%0A%3C/svg%3E", "id-radiation": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2070%20190%22%20fill%3D%22none%22%20stroke%3D%22%23f5f4e9%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%3Cpath%20d%3D%22M31%204h8v14h-8z%22/%3E%3Crect%20x%3D%228%22%20y%3D%2218%22%20width%3D%2254%22%20height%3D%22168%22%20rx%3D%226%22/%3E%3Cpath%20d%3D%22M8%20140h54%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2238%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3Ccircle%20cx%3D%2244%22%20cy%3D%2252%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2270%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3Ccircle%20cx%3D%2248%22%20cy%3D%2286%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%22100%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%22116%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3Ccircle%20cx%3D%2228%22%20cy%3D%22128%22%20r%3D%222.6%22%20fill%3D%22%23f5f4e9%22%20stroke%3D%22none%22/%3E%3C/svg%3E", "id-emf": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2070%20190%22%20fill%3D%22none%22%20stroke%3D%22%23f5f4e9%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%3Cpath%20d%3D%22M31%204h8v14h-8z%22/%3E%3Crect%20x%3D%228%22%20y%3D%2218%22%20width%3D%2254%22%20height%3D%22168%22%20rx%3D%226%22/%3E%3Cpath%20d%3D%22M8%20140h54%22/%3E%3Cpath%20d%3D%22M22%2036v90M35%2050v62M48%2030v100%22/%3E%3C/svg%3E", "id-humidity": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2070%20190%22%20fill%3D%22none%22%20stroke%3D%22%23f5f4e9%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%3Cpath%20d%3D%22M31%204h8v14h-8z%22/%3E%3Crect%20x%3D%228%22%20y%3D%2218%22%20width%3D%2254%22%20height%3D%22168%22%20rx%3D%226%22/%3E%3Cpath%20d%3D%22M8%20140h54%22/%3E%3Ccircle%20cx%3D%2235%22%20cy%3D%2280%22%20r%3D%2215%22/%3E%3Cpath%20d%3D%22M35%2058c-6%207-9%2011-9%2015a9%209%200%200%200%2018%200c0-4-3-8-9-15z%22%20stroke-width%3D%222.4%22/%3E%3C/svg%3E", "id-organic": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2070%20190%22%20fill%3D%22none%22%20stroke%3D%22%23f5f4e9%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%0A%3Cpath%20d%3D%22M31%204h8v14h-8z%22/%3E%3Crect%20x%3D%228%22%20y%3D%2218%22%20width%3D%2254%22%20height%3D%22168%22%20rx%3D%226%22/%3E%3Cpath%20d%3D%22M8%20140h54%22/%3E%3Cpath%20d%3D%22M35%2030v96%22/%3E%3Cpath%20d%3D%22M27%20120l8%2010%208-10%22/%3E%3C/svg%3E", "pass-yes": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%235fc35a%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%2012.5l4.5%204.5L19%207%22/%3E%3C/svg%3E", "pass-almost": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23e9c13f%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%2012.5l4.5%204.5L19%207%22/%3E%3C/svg%3E", "pass-no": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23e2532f%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%206l12%2012M18%206L6%2018%22/%3E%3C/svg%3E"};
+</script>
+<script>
+/* Lapka PEM engine — JavaScript port of SenseFramework (lapka-pem-sdk-ios by Sergey Filippov).
+ * Signal path, identification and the four sensor state machines follow the original 1:1;
+ * web-specific additions are marked "WEB:". */
+"use strict";
+
+const N_FRAMES = 1024;                 // original: maxFramesPerSlice/4 = 1024
+const BIT_ZERO = 0.0, BIT_ONE = 1.0;   // kSFControlSignalBitZero/One
+
+const SensorType = { Unknown: 0, Nitrates: 1, Fields: 2, Radiation: 3, Humidity: 4 };
+const SensorTypeName = { 0: 'Unknown', 1: 'Organic', 2: 'EMF', 3: 'Radiation', 4: 'Humidity' };
+const SensorState = { Off: 0, Calibrating: 1, Ready: 2, Measuring: 3 };
+
+/* ---------------- Hardware profiles (coefficients per original platform) ---------------- */
+const PROFILES = {
+  iPhone5:  { name: 'iPhone 5 / 5s / 5c', fp: 0.074, emfScale: 2.5, hum: [122.0, 77.4, 0.261, 1.056, 1.26], nit: [23, 205, 118, 0] },
+  iPhone4S: { name: 'iPhone 4S',          fp: 0.225, emfScale: 0.8, hum: [122.0, 77.4, 0.314, 0.982, 1.26], nit: [26, 151, 93, 0] },
+  iPhone4:  { name: 'iPhone 4',           fp: 0.191, emfScale: 1.0, hum: [122.0, 77.4, 0.261, 0.982, 1.26], nit: [26, 151, 93, 0] },
+  iPhone3GS:{ name: 'iPhone 3GS',         fp: 0.195, emfScale: 1.0, hum: [122.0, 77.4, 0.314, 0.982, 1.26], nit: [26, 151, 93, 0] },
+  iPod4:    { name: 'iPod touch 4',       fp: 0.127, emfScale: 1.6, hum: [119.0, 75.6, 0.311, 0.994, 1.32], nit: [26, 154, 97, 0] },
+  iPad2:    { name: 'iPad 2',             fp: 0.225, emfScale: 1.0, hum: [109.9, 66.5, 0.286, 1.010, 1.33], nit: [26, 164, 100, 0] },
+  iPad3:    { name: 'iPad 3',             fp: 0.074, emfScale: 1.0, hum: [126.6, 83.1, 0.314, 0.990, 1.32], nit: [26, 164, 100, 0] },
+  iPad4:    { name: 'iPad 4',             fp: 0.074, emfScale: 0.8, hum: [129.9, 85.6, 0.318, 0.986, 1.30], nit: [26, 164, 100, 0] },
+  iPadMini: { name: 'iPad mini / Air',    fp: 0.074, emfScale: 0.8, hum: [126.6, 83.1, 0.314, 0.990, 1.32], nit: [23, 205, 118, 0] },
+};
+
+/* Tiny event bus (stands in for NSNotificationCenter) */
+class Bus {
+  constructor() { this.h = {}; }
+  on(n, f) { (this.h[n] = this.h[n] || []).push(f); return () => this.off(n, f); }
+  off(n, f) { this.h[n] = (this.h[n] || []).filter(x => x !== f); }
+  emit(n, d) { (this.h[n] || []).slice().forEach(f => { try { f(d); } catch (e) { console.error(e); } }); }
+}
+const bus = new Bus();
+
+/* ---------------- WEB: audio I/O (replaces RemoteIO AudioUnit) ---------------- */
+const WORKLET_SRC = `
+class LapkaIO extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.p = { fL: 18000, fR: 18000, aL: 0, aR: 0, anti: 1, sq: 0, gain: 1, on: 0 };
+    this.thL = 0; this.thR = 0; this.buf = new Float32Array(${N_FRAMES}); this.n = 0;
+    this.port.onmessage = e => Object.assign(this.p, e.data);
+  }
+  process(inputs, outputs) {
+    const inp = inputs[0] && inputs[0][0];
+    const out = outputs[0], L = out[0], R = out[1] || out[0];
+    const p = this.p, dL = 2 * Math.PI * p.fL / sampleRate, dR = 2 * Math.PI * p.fR / sampleRate;
+    const g = p.on ? p.gain : 0, ls = p.anti ? -1 : 1;
+    for (let i = 0; i < L.length; i++) {
+      let wl = Math.sin(this.thL), wr = Math.sin(this.thR);
+      if (p.sq) { wl = wl > 0 ? 1 : -1; wr = wr > 0 ? 1 : -1; }
+      L[i] = ls * wl * p.aL * g; R[i] = wr * p.aR * g;
+      this.thL += dL; this.thR += dR;
+      if (this.thL > 2 * Math.PI) this.thL -= 2 * Math.PI;
+      if (this.thR > 2 * Math.PI) this.thR -= 2 * Math.PI;
+      this.buf[this.n++] = inp ? inp[i] : 0;
+      if (this.n === ${N_FRAMES}) { this.port.postMessage(this.buf, [this.buf.buffer]); this.buf = new Float32Array(${N_FRAMES}); this.n = 0; }
+    }
+    return true;
+  }
+}
+registerProcessor('lapka-io', LapkaIO);`;
+
+class AudioIO {
+  constructor() {
+    this.p = { fL: 18000, fR: 18000, aL: 0, aR: 0, anti: 1, sq: 0, gain: 1, on: 0 };
+    this.consumer = null; this.blocks = 0; this.peak = 0; this.running = false;
+    this.sr = 48000; this.holdBlocks = 3; this.extraLatencyMs = 0; this.mode = 'audio';
+    this.lastBlock = null;
+  }
+  async start(deviceId) {
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+    this.sr = this.ctx.sampleRate;
+    this.stream = await navigator.mediaDevices.getUserMedia({ audio: {
+      deviceId: deviceId ? { exact: deviceId } : undefined,
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } });
+    this.src = this.ctx.createMediaStreamSource(this.stream);
+    try {
+      const url = URL.createObjectURL(new Blob([WORKLET_SRC], { type: 'application/javascript' }));
+      await this.ctx.audioWorklet.addModule(url);
+      this.node = new AudioWorkletNode(this.ctx, 'lapka-io', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2] });
+      this.node.port.onmessage = e => this._block(e.data);
+      this.post = d => this.node.port.postMessage(d);
+      this.kind = 'AudioWorklet';
+    } catch (e) {
+      // fallback: ScriptProcessor with the same generator
+      const sp = this.ctx.createScriptProcessor(N_FRAMES, 1, 2); let thL = 0, thR = 0;
+      sp.onaudioprocess = ev => {
+        const x = ev.inputBuffer.getChannelData(0), L = ev.outputBuffer.getChannelData(0), R = ev.outputBuffer.getChannelData(1);
+        const p = this.p, dL = 2 * Math.PI * p.fL / this.sr, dR = 2 * Math.PI * p.fR / this.sr, g = p.on ? p.gain : 0, ls = p.anti ? -1 : 1;
+        for (let i = 0; i < L.length; i++) {
+          let wl = Math.sin(thL), wr = Math.sin(thR); if (p.sq) { wl = wl > 0 ? 1 : -1; wr = wr > 0 ? 1 : -1; }
+          L[i] = ls * wl * p.aL * g; R[i] = wr * p.aR * g; thL = (thL + dL) % (2 * Math.PI); thR = (thR + dR) % (2 * Math.PI);
+        }
+        this._block(new Float32Array(x));
+      };
+      this.node = sp; this.post = () => {}; this.kind = 'ScriptProcessor';
+    }
+    this.src.connect(this.node); this.node.connect(this.ctx.destination);
+    await this.ctx.resume();
+    const st = this.stream.getAudioTracks()[0].getSettings ? this.stream.getAudioTracks()[0].getSettings() : {};
+    this.inputLabel = this.stream.getAudioTracks()[0].label;
+    this.inLatency = typeof st.latency === 'number' ? st.latency : 0.02;
+    this.updateHold();
+    this.running = true;
+  }
+  updateHold() {
+    // WEB: round-trip latency in blocks; analysis is paused this long after every control change
+    const out = (this.ctx && (this.ctx.outputLatency || 0) + (this.ctx.baseLatency || 0)) || 0.02;
+    const total = out + (this.inLatency || 0.02) + this.extraLatencyMs / 1000;
+    this.latency = total;
+    this.holdBlocks = Math.ceil(total * this.sr / N_FRAMES) + 1;
+  }
+  stop() {
+    this.running = false;
+    try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    try { this.ctx && this.ctx.close(); } catch (e) {}
+  }
+  set(d) { Object.assign(this.p, d); if (this.post) this.post(d); }
+  _block(x) {
+    this.blocks++; let pk = 0; for (let i = 0; i < x.length; i++) { const a = Math.abs(x[i]); if (a > pk) pk = a; }
+    this.peak = pk; this.lastBlock = x;
+    if (this.consumer) this.consumer._onBlock(x);
+  }
+}
+
+/* ---------------- SFSignalFFTAnalyzer ---------------- */
+class FFTAnalyzer {
+  constructor(n) {
+    this.n = n; this.sampleRate = 44100; this.frequency = 18000; this.meanSteps = 100;
+    this.useNoizeVectorCorrection = false;
+    this.realZero = this.imagZero = this.realNoize = this.imagNoize = this.realSignalMax = this.imagSignalMax = 0;
+    this.amplitude = 0; this.meanAmplitude = 0; this.angle = 0; this.real = 0; this.imag = 0;
+    this.sum = 0; this.meanStep = 0; this.delegate = null; this._k = -1;
+  }
+  _tables(k) {
+    if (k === this._k) return; this._k = k;
+    this.cos = new Float32Array(this.n); this.sin = new Float32Array(this.n);
+    for (let i = 0; i < this.n; i++) { this.cos[i] = Math.cos(2 * Math.PI * k * i / this.n); this.sin[i] = Math.sin(2 * Math.PI * k * i / this.n); }
+  }
+  process(x) {
+    const n = this.n, k = Math.floor(this.frequency * n / this.sampleRate);
+    this._tables(k);
+    // vDSP_fft_zrip output (2x DFT) scaled by 1/(2n)  ==  DFT / n
+    let re = 0, im = 0; for (let i = 0; i < n; i++) { re += x[i] * this.cos[i]; im -= x[i] * this.sin[i]; }
+    this.real = re / n; this.imag = im / n;
+    this.angle = Math.atan2(this.real, this.imag) / Math.PI * 180;
+    const d = (a, b, c, e) => Math.hypot(a - c, b - e);
+    if (this.useNoizeVectorCorrection) {
+      const R = this.real, I = this.imag;
+      if (this.realNoize === 0 && this.imagNoize === 0 && this.realSignalMax === 0 && this.imagSignalMax === 0) {
+        this.realZero = R; this.imagZero = I; this.realNoize = R; this.imagNoize = I; this.realSignalMax = R; this.imagSignalMax = I;
+      }
+      const s2n = d(R, I, this.realNoize, this.imagNoize), s2m = d(R, I, this.realSignalMax, this.imagSignalMax), n2m = d(this.realNoize, this.imagNoize, this.realSignalMax, this.imagSignalMax);
+      if (s2n > n2m) { this.realSignalMax = R; this.imagSignalMax = I; }
+      else if (s2m > n2m) {
+        const z2m = d(this.realZero, this.imagZero, this.realSignalMax, this.imagSignalMax), z2s = d(this.realZero, this.imagZero, R, I);
+        if (z2m > z2s) { this.realNoize = R; this.imagNoize = I; }
+        else { this.realNoize = this.realSignalMax; this.imagNoize = this.imagSignalMax; this.realSignalMax = R; this.imagSignalMax = I; }
+      }
+      this.amplitude = d(this.realNoize, this.imagNoize, R, I);
+    } else {
+      this.amplitude = Math.hypot(this.real, this.imag);
+    }
+    this.delegate && this.delegate.fftAnalyzerDidUpdateAmplitude(this.amplitude);
+    this.sum += this.amplitude; this.meanStep++;
+    if (this.meanStep >= this.meanSteps) {
+      this.meanAmplitude = this.sum / this.meanSteps; this.meanStep = 0; this.sum = 0;
+      this.delegate && this.delegate.fftAnalyzerDidUpdateMeanAmplitude(this.meanAmplitude);
+    }
+  }
+}
+
+/* ---------------- SFSignalImpulseDetector ---------------- */
+class ImpulseDetector {
+  constructor() { this.threshold = 0.025; this.prev = false; this.impulseAmplitude = 0; this.delegate = null; }
+  process(x) {
+    let sum = 0, max = -Infinity;
+    for (let i = 0; i < x.length; i++) { sum += Math.abs(x[i]); if (x[i] > max) max = x[i]; }
+    const mean = sum / x.length;
+    this.delegate.impulseDetectorDidUpdateMeanAmplitude(mean);
+    this.delegate.impulseDetectorDidUpdateMaxAmplitude(max);
+    const above = max > this.threshold;
+    if (above && !this.prev) { this.impulseAmplitude = max; this.delegate.impulseDetectorDidDetectImpulse(); }
+    this.prev = above;
+  }
+}
+
+/* ---------------- SFSignalProcessor ---------------- */
+class SignalProcessor {
+  constructor(io) {
+    this.io = io; this.sampleRate = io.sr; this.numberOfFrames = N_FRAMES;
+    this.antiphase = true; this.waveSquare = false;
+    this.leftAmplitude = 1; this.rightAmplitude = 1;
+    this.fftAnalyzer = new FFTAnalyzer(N_FRAMES); this.fftAnalyzer.sampleRate = this.sampleRate; this.fftAnalyzer.meanSteps = 100; this.fftAnalyzer.delegate = this;
+    this.impulseDetector = new ImpulseDetector(); this.impulseDetector.delegate = this;
+    this.fftAnalyzerEnabled = true; this.impulseDetectorEnabled = false;
+    this.started = false; this.hold = 0; this.delegate = null;
+    this.setFrequency(this.optimizeFrequency(18000));
+  }
+  optimizeFrequency(f) { const bin = Math.floor(f * this.numberOfFrames / this.sampleRate); return bin * this.sampleRate / this.numberOfFrames; }
+  setFrequency(f) { this.leftFrequency = this.rightFrequency = f; this.fftAnalyzer.frequency = f; this._push(); }
+  setLeftAmplitude(v) { this.leftAmplitude = v; this._push(); }
+  setRightAmplitude(v) { this.rightAmplitude = v; this._push(); }
+  setAmplitude(v) { this.leftAmplitude = this.rightAmplitude = v; this._push(); }
+  _push() {
+    if (!this.started) return;
+    this.io.set({ fL: this.leftFrequency, fR: this.rightFrequency, aL: this.leftAmplitude, aR: this.rightAmplitude, anti: this.antiphase ? 1 : 0, sq: this.waveSquare ? 1 : 0, on: 1 });
+    this.hold = this.io.holdBlocks;   // WEB: skip blocks recorded before the change reached the sensor and came back
+    bus.emit('io-params', this.io.p);
+  }
+  start() {
+    if (this.started) return false;
+    this.started = true; this.io.consumer = this; this._push(); return true;
+  }
+  stop() {
+    if (!this.started) return; this.started = false;
+    if (this.io.consumer === this) { this.io.consumer = null; this.io.set({ on: 0 }); bus.emit('io-params', this.io.p); }
+  }
+  reboot() {}
+  _onBlock(x) {
+    if (!this.started) return;
+    if (this.hold > 0) { this.hold--; return; }
+    if (this.impulseDetectorEnabled) this.impulseDetector.process(x);
+    if (this.fftAnalyzerEnabled) this.fftAnalyzer.process(x);
+  }
+  fftAnalyzerDidUpdateAmplitude(a) { bus.emit('amp', a); this.delegate && this.delegate.signalProcessorDidUpdateAmplitude && this.delegate.signalProcessorDidUpdateAmplitude(a); }
+  fftAnalyzerDidUpdateMeanAmplitude(a) { this.delegate && this.delegate.signalProcessorDidUpdateMeanAmplitude && this.delegate.signalProcessorDidUpdateMeanAmplitude(a); }
+  impulseDetectorDidUpdateMeanAmplitude(a) { this.delegate && this.delegate.signalProcessorDidUpdateMeanAmplitude && this.delegate.signalProcessorDidUpdateMeanAmplitude(a); }
+  impulseDetectorDidUpdateMaxAmplitude(a) { bus.emit('max', a); }
+  impulseDetectorDidDetectImpulse() { this.delegate && this.delegate.signalProcessorDidRecognizeImpulse && this.delegate.signalProcessorDidRecognizeImpulse(); }
+}
+
+/* ---------------- SFIdentificator ---------------- */
+const ID = { meanSteps: 10, stepsToSkip: 3, humCoef: 1.51, threshold: 0.08,
+  L1: 1.0, R1: 1.0, L0: 0.2, R0: 0.0 };
+
+class Identificator {
+  constructor(io, settings) { this.io = io; this.settings = settings; this.busy = false; }
+  identificate(onDone) {
+    if (this.busy) return; this.busy = true; this.onDone = onDone;
+    // WEB: two passes replace the "European volume" retry — user level first, then full level
+    this.levels = this.settings.outputLevel < 1 ? [this.settings.outputLevel, 1.0] : [1.0];
+    this.pass = 0; this._run();
+  }
+  _run() {
+    this.io.set({ gain: this.levels[this.pass] });
+    this.sp = new SignalProcessor(this.io); this.sp.delegate = this;
+    this.sp.fftAnalyzer.meanSteps = ID.meanSteps;
+    this.stepsToSkip = ID.stepsToSkip; this.step = 0; this.threshold = ID.threshold;
+    this.sid = [0, 0, 0, 0]; this.fp = [0, 0, 0, 0];
+    this.sp.rightAmplitude = ID.R0; this.sp.leftAmplitude = ID.L0;
+    if (this.io.sim) this.io.sim.idMode = true;
+    this.sp.start();
+    bus.emit('id-progress', { step: 0, pass: this.pass });
+  }
+  abort() { if (this.sp) this.sp.stop(); this.busy = false; if (this.io.sim) this.io.sim.idMode = false; }
+  signalProcessorDidUpdateMeanAmplitude() {
+    const a = this.sp.fftAnalyzer.amplitude;   // last amplitude, as in original
+    if (this.stepsToSkip > 0) {
+      this.stepsToSkip--;
+      if (this.stepsToSkip === 0) { this.threshold = a / 3; this.micLevel = a; }
+      return;
+    }
+    const bit = a >= this.threshold ? 1 : 0;
+    this.sid[this.step] = bit; this.fp[this.step] = a;
+    const next = [[ID.R0, ID.L1], [ID.R1, ID.L0], [ID.R1, ID.L1]][this.step];
+    if (this.step === 3) return this._done();
+    this.sp.rightAmplitude = next[0]; this.sp.setLeftAmplitude(next[1]);
+    this.step++;
+    bus.emit('id-progress', { step: this.step, pass: this.pass });
+  }
+  static convert(s) {
+    const k = s.join('');
+    return { '1110': SensorType.Fields, '1100': SensorType.Radiation, '1011': SensorType.Humidity, '1010': SensorType.Nitrates }[k] || SensorType.Unknown;
+  }
+  _done() {
+    this.sp.stop();
+    const type = Identificator.convert(this.sid);
+    const prof = PROFILES[this.settings.profile] || PROFILES.iPhone5;
+    const fpThr = prof.fp * (type === SensorType.Humidity ? ID.humCoef : 1);
+    const result = { type, sid: this.sid.join(''), fingerprint: this.fp.slice(), threshold: this.threshold, micLevel: this.micLevel,
+      level: this.levels[this.pass], weak: this.fp[0] <= fpThr, fpThreshold: fpThr };
+    if (type === SensorType.Unknown && this.pass + 1 < this.levels.length) { this.pass++; return this._run(); }
+    this.busy = false; if (this.io.sim) this.io.sim.idMode = false;
+    this.onDone && this.onDone(result);
+  }
+}
+
+/* ---------------- SFAbstractSensor ---------------- */
+class AbstractSensor {
+  constructor(io, settings) { this.io = io; this.settings = settings; this.sp = new SignalProcessor(io); this.sp.delegate = this; this.calibrated = false; this.measuring = false; }
+  get profile() { return PROFILES[this.settings.profile] || PROFILES.iPhone5; }
+  setOutputVolumeUp() { this.io.set({ gain: this.settings.workLevel || 1 }); }
+  startCalibration() { bus.emit('willStartCalibration', { time: this.calibrationTime }); }
+  cancelCalibration() { bus.emit('didCancelCalibration'); }
+  resetCalibration() { this.calibrated = false; }
+  calibrationComplete() { this.calibrated = true; bus.emit('didCompleteCalibration'); }
+  startMeasure() {
+    if (!this.calibrated) { console.warn('Sensor isn\'t calibrated'); return false; }
+    if (this.measuring) return false; this.measuring = true; bus.emit('willStartMeasure'); return true;
+  }
+  stopMeasure() { if (!this.measuring) return; this.measuring = false; bus.emit('didCompleteMeasure'); }
+  destroy() { try { this.stopMeasure(); } catch (e) {} this.sp.stop(); }
+}
+
+/* ---------------- SFRadiationSensor ---------------- */
+const RAD = { freq: 19000, threshold: 0.3, safeStart: 1.0, uSv: 0.04, uR: 4.0, thrCoef: 4.0, calTime: 4.0 };
+class RadiationSensor extends AbstractSensor {
+  constructor(io, s) {
+    super(io, s); this.type = SensorType.Radiation;
+    this.sp.impulseDetector.threshold = RAD.threshold; this.sp.setFrequency(RAD.freq);
+    this.particles = 0; this.time = 0;
+  }
+  get calibrationTime() { return RAD.calTime; }
+  startCalibration() { this.calTimer = setTimeout(() => this.calibrationComplete(), RAD.calTime * 1000); super.startCalibration(); }
+  cancelCalibration() { clearTimeout(this.calTimer); this.calTimer = null; super.cancelCalibration(); }
+  calibrationComplete() { clearTimeout(this.calTimer); this.calTimer = null; super.calibrationComplete(); }
+  startMeasure() {
+    if (!super.startMeasure()) return;
+    this.setOutputVolumeUp();
+    this.sp.leftAmplitude = BIT_ONE; this.sp.rightAmplitude = BIT_ONE;
+    this.sp.impulseDetectorEnabled = true; this.sp.fftAnalyzerEnabled = false;
+    this.sp.start();
+    this.timer = setInterval(() => this.tick(), 1000);
+  }
+  stopMeasure() {
+    clearTimeout(this.calTimer); this.calTimer = null; clearInterval(this.timer); this.timer = null;
+    this.sp.stop(); this.particles = 0; this.time = 0; super.stopMeasure();
+  }
+  get particlesPerMinute() { return this.time > 0 ? this.particles / (this.time / 60) : 0; }
+  get radiationLevel() { return RAD.uSv * this.particlesPerMinute * (this.settings.radCoef || 1); }
+  report() { bus.emit('value', { type: this.type, value: this.radiationLevel, cpm: this.particlesPerMinute, particles: this.particles, time: this.time }); }
+  tick() { this.time++; this.report(); }
+  signalProcessorDidRecognizeImpulse() {
+    if (this.time < RAD.safeStart) return;
+    this.particles++; bus.emit('particle'); this.report();
+  }
+  signalProcessorDidUpdateMeanAmplitude(m) { this.sp.impulseDetector.threshold = m * RAD.thrCoef; }
+  get sensorState() { return this.calTimer ? SensorState.Calibrating : (!this.timer ? SensorState.Ready : SensorState.Measuring); }
+}
+
+/* ---------------- SFFieldSensor ---------------- */
+const EMF = { freq: 16000, meanSteps: 25, HF_K1: 30.0, HF_K2: 4.5, LF_K1: 10.0, LF_K2: 320.0, calTime: 40.0 };
+const FieldType = { Low: 0, High: 1 };
+const FieldState = { Off: 0, Calibrating: 1, Ready: 2, Measuring: 3 };
+class FieldSensor extends AbstractSensor {
+  constructor(io, s) {
+    super(io, s); this.type = SensorType.Fields;
+    this.fieldType = FieldType.High; this.state = FieldState.Off;
+    this.hf_K1 = EMF.HF_K1; this.hf_K2 = EMF.HF_K2; this.lf_K1 = EMF.LF_K1; this.lf_K2 = EMF.LF_K2;
+    this.scaleCoef = s.emfScale != null ? s.emfScale : this.profile.emfScale;
+    this.lowFrequencyField = this.highFrequencyField = this.meanLowFrequencyField = this.meanHighFrequencyField = 0;
+  }
+  get calibrationTime() { return this.settings.emfCalTime != null ? this.settings.emfCalTime : EMF.calTime; }
+  updateWithFieldType(t) {
+    if (this.state === FieldState.Off || this.state === FieldState.Ready) { this.fieldType = t; this.setupSignalProcessorForFieldType(t); return true; }
+    return false;
+  }
+  startCalibration() {
+    this.setOutputVolumeUp(); this.setupSignalProcessorForFieldType(this.fieldType);
+    this.sp.start(); this.state = FieldState.Calibrating;
+    this.calTimer = setTimeout(() => this.calibrationComplete(), this.calibrationTime * 1000);
+    super.startCalibration();
+  }
+  cancelCalibration() { clearTimeout(this.calTimer); this.calTimer = null; this.sp.stop(); this.state = FieldState.Off; super.cancelCalibration(); }
+  calibrationComplete() { this.calTimer = null; this.state = FieldState.Ready; super.calibrationComplete(); }
+  startMeasure() {
+    if (!super.startMeasure()) return;
+    this.sp.fftAnalyzer.useNoizeVectorCorrection = true; this.resetFFTNoizeVectorCorrection();
+    this.state = FieldState.Measuring;
+  }
+  stopMeasure() { this.state = FieldState.Ready; this.lowFrequencyField = 0; this.highFrequencyField = 0; super.stopMeasure(); }
+  setupSignalProcessorForFieldType(t) {
+    this.sp.setFrequency(this.sp.optimizeFrequency(EMF.freq));
+    this.sp.fftAnalyzer.meanSteps = EMF.meanSteps;
+    if (t === FieldType.Low) { this.sp.leftAmplitude = BIT_ONE; this.sp.setRightAmplitude(BIT_ONE); }
+    else { this.sp.leftAmplitude = BIT_ZERO; this.sp.setRightAmplitude(BIT_ONE); }
+    if (this.state === FieldState.Measuring) this.resetFFTNoizeVectorCorrection();
+  }
+  resetFFTNoizeVectorCorrection() { const f = this.sp.fftAnalyzer; f.realSignalMax = f.imagSignalMax = f.realNoize = f.imagNoize = f.realZero = f.imagZero = 0; }
+  calc(a, K1, K2) { const v = a * this.scaleCoef; return Math.max((Math.exp(K1 * v) - 1) * K2, 0); }
+  signalProcessorDidUpdateAmplitude(a) {
+    if (this.state !== FieldState.Measuring) return;
+    if (this.fieldType === FieldType.Low) { this.lowFrequencyField = this.calc(a, this.lf_K1, this.lf_K2); bus.emit('intermediate', { type: this.type, fieldType: 0, value: this.lowFrequencyField }); }
+    else { this.highFrequencyField = this.calc(a, this.hf_K1, this.hf_K2); bus.emit('intermediate', { type: this.type, fieldType: 1, value: this.highFrequencyField }); }
+  }
+  signalProcessorDidUpdateMeanAmplitude(m) {
+    if (this.state !== FieldState.Measuring) return;
+    if (this.fieldType === FieldType.Low) { this.meanLowFrequencyField = this.calc(m, this.lf_K1, this.lf_K2); bus.emit('value', { type: this.type, fieldType: 0, value: this.meanLowFrequencyField }); }
+    else { this.meanHighFrequencyField = this.calc(m, this.hf_K1, this.hf_K2); bus.emit('value', { type: this.type, fieldType: 1, value: this.meanHighFrequencyField }); }
+  }
+  destroy() { clearTimeout(this.calTimer); super.destroy(); }
+  get sensorState() { return [SensorState.Off, SensorState.Calibrating, SensorState.Ready, SensorState.Measuring][this.state]; }
+}
+
+/* ---------------- SFHumiditySensor ---------------- */
+const HUM = { resetting: 250, calibrating: 10, secondResetting: 25, firstTemp: 200, temp: 50, hum: 50 };
+const HS = { Off: 0, Resetting: 1, Calibrate: 2, SecondResetting: 3, SecondCalibrate: 4, FirstTemp: 5, CalComplete: 6, Humidity: 7, Temperature: 8 };
+class HumiditySensor extends AbstractSensor {
+  constructor(io, s) {
+    super(io, s); this.type = SensorType.Humidity; this.state = HS.Off;
+    [this.K1, this.K2, this.K3, this.K4, this.K5] = this.profile.hum;
+    this.humidity = 0; this.temperature = 0;
+  }
+  get calibrationTime() { return Math.floor((HUM.resetting + HUM.calibrating + HUM.secondResetting + HUM.firstTemp) / 42); }
+  _set(l, r, steps) { this.sp.leftAmplitude = l; this.sp.rightAmplitude = r; this.sp.fftAnalyzer.meanSteps = steps; this.sp._push(); }
+  startCalibration() {
+    this.state = HS.Resetting; this.setOutputVolumeUp();
+    this.sp.leftAmplitude = BIT_ZERO; this.sp.rightAmplitude = BIT_ZERO; this.sp.fftAnalyzer.meanSteps = HUM.resetting;
+    this.sp.start(); super.startCalibration();
+  }
+  cancelCalibration() { this.sp.stop(); this.state = HS.Off; super.cancelCalibration(); }
+  calibrationComplete() { this.sp.stop(); this.state = HS.CalComplete; super.calibrationComplete(); }
+  startMeasure() {
+    if (!super.startMeasure()) return;
+    this.sp.leftAmplitude = BIT_ONE; this.sp.rightAmplitude = BIT_ONE; this.sp.fftAnalyzer.meanSteps = HUM.hum;
+    this.sp.start(); this.state = HS.Humidity;
+  }
+  stopMeasure() { this.sp.stop(); this.state = HS.Off; super.stopMeasure(); }
+  didUpdateValue() { if (this.measuring) bus.emit('value', { type: this.type, humidity: this.humidity, temperature: this.temperature }); }
+  calcT(U2) { let T = this.K2 - this.K1 * (U2 / this.calibratingLevel); if (T < 0) T *= this.K5; return T; }
+  calcH(T, U3) { const h = (U3 / this.secondCalibratingLevel - this.K3) / this.K4 * 100; return Math.min(Math.max(h / (1.0546 - 0.00216 * T), 0), 100); }
+  signalProcessorDidUpdateMeanAmplitude() {
+    const a = this.sp.fftAnalyzer.amplitude;
+    switch (this.state) {
+      case HS.Resetting: this._set(BIT_ZERO, BIT_ONE, HUM.calibrating); this.state = HS.Calibrate; bus.emit('cal-step', 1); break;
+      case HS.Calibrate: this.calibratingLevel = a; this._set(BIT_ZERO, BIT_ZERO, HUM.secondResetting); this.state = HS.SecondResetting; bus.emit('cal-step', 2); break;
+      case HS.SecondResetting: this._set(BIT_ONE, BIT_ONE, HUM.calibrating); this.state = HS.SecondCalibrate; bus.emit('cal-step', 3); break;
+      case HS.SecondCalibrate: this.secondCalibratingLevel = a; this._set(BIT_ZERO, BIT_ONE, HUM.firstTemp); this.state = HS.FirstTemp; bus.emit('cal-step', 4); break;
+      case HS.FirstTemp: this.temperatureLevel = a; this.temperature = this.calcT(a); this.calibrationComplete(); break;
+      case HS.Temperature:
+        this.temperatureLevel = a; this.temperature = this.calcT(a); this.didUpdateValue();
+        this._set(BIT_ONE, BIT_ONE, HUM.hum); this.state = HS.Humidity; break;
+      case HS.Humidity:
+        this.humidityLevel = a; this.humidity = this.calcH(this.temperature, a); this.didUpdateValue();
+        this._set(BIT_ZERO, BIT_ONE, HUM.temp); this.state = HS.Temperature; break;
+    }
+  }
+  get levels() { return { U1: this.calibratingLevel, U4: this.secondCalibratingLevel, T: this.temperatureLevel, H: this.humidityLevel }; }
+}
+
+/* ---------------- SFNitratesSensor ---------------- */
+const NIT = { safeDelay: 200, calibration: 3, firstTemp: 200, temp: 10, empty: 25, nitrates: 200, calTime: 9.5, nonZero: 2.0 };
+const NS = { Off: 0, SafeDelay: 1, Calibration: 2, FirstTemp: 3, Empty: 4, CalComplete: 5, Nitrates: 6, Temperature: 7 };
+class NitratesSensor extends AbstractSensor {
+  constructor(io, s) {
+    super(io, s); this.type = SensorType.Nitrates; this.state = NS.Off;
+    [this.K1, this.K2, this.K3, this.K4] = this.profile.nit;
+    this.reduceSmallValueToZero = true; this.productCoefficient = 1.0; this.reset();
+  }
+  get calibrationTime() { return NIT.calTime; }
+  reset() { this.temperature_level = this.calibration_level = this.empty_nitrates_level = this.nitrates_level = this.empty_nitrates = this.temperature = this.nitrates = 0; }
+  _set(st, l, r, steps) { this.state = st; this.sp.leftAmplitude = l; this.sp.rightAmplitude = r; this.sp.fftAnalyzer.meanSteps = steps; this.sp._push(); }
+  startCalibration() {
+    this.reset(); this.setOutputVolumeUp(); this._set(NS.SafeDelay, BIT_ZERO, BIT_ZERO, NIT.safeDelay);
+    this.sp.start(); super.startCalibration();
+  }
+  cancelCalibration() { this.state = NS.Off; this.sp.stop(); super.cancelCalibration(); }
+  calibrationComplete() { this.state = NS.CalComplete; super.calibrationComplete(); }
+  startMeasure() {
+    if (!super.startMeasure()) return;
+    if (this.state !== NS.CalComplete) return;
+    this._set(NS.Temperature, BIT_ZERO, BIT_ONE, NIT.temp); this.sp.start();
+  }
+  stopMeasure() { this.sp.stop(); this.state = NS.CalComplete; super.stopMeasure(); }
+  calcT() { return this.K3 - this.K2 * this.temperature_level / this.calibration_level; }
+  calcN(U3) { const T = this.temperature; return (1 - 0.01 * (T - 20)) * this.K1 * (this.calibration_level - U3 - this.K4) / U3 * 4.0; }
+  signalProcessorDidUpdateMeanAmplitude() {
+    const a = this.sp.fftAnalyzer.amplitude;
+    switch (this.state) {
+      case NS.SafeDelay: this._set(NS.Calibration, BIT_ZERO, BIT_ONE, NIT.calibration); bus.emit('cal-step', 1); break;
+      case NS.Calibration: this.calibration_level = a; this._set(NS.FirstTemp, BIT_ZERO, BIT_ONE, NIT.firstTemp); bus.emit('cal-step', 2); break;
+      case NS.FirstTemp: this.temperature_level = a; this.temperature = this.calcT(); this._set(NS.Empty, BIT_ONE, BIT_ONE, NIT.empty); bus.emit('cal-step', 3); break;
+      case NS.Empty:
+        this.empty_nitrates_level = a; this.empty_nitrates = this.calcN(a);
+        this.calibrationComplete(); break;
+      case NS.Temperature: this.temperature_level = a; this.temperature = this.calcT(); this._set(NS.Nitrates, BIT_ONE, BIT_ONE, NIT.nitrates); bus.emit('measure-step', 1); break;
+      case NS.Nitrates: {
+        this.nitrates_level = a; let n = this.calcN(a); const raw = n;
+        n = Math.max(n - this.empty_nitrates, 0);
+        if (this.reduceSmallValueToZero && n < NIT.nonZero) n = 0;
+        n *= this.productCoefficient; this.nitrates = n;
+        bus.emit('value', { type: this.type, value: n, raw, empty: this.empty_nitrates, temperature: this.temperature });
+        this.stopMeasure(); break;
+      }
+    }
+  }
+}
+
+/* ---------------- SFSensorManager ---------------- */
+class SensorManager {
+  constructor(settings) { this.settings = settings; this.io = null; this.sensor = null; this.currentSensorType = SensorType.Unknown; }
+  attach(io) { this.io = io; this.identificator = new Identificator(io, this.settings); }
+  identify() {
+    if (!this.io) return;
+    this.removeSensor();
+    bus.emit('willStartIdentification');
+    setTimeout(() => this.identificator.identificate(r => this.identificatorDidRecognizeSensor(r)), 600);
+  }
+  identificatorDidRecognizeSensor(r) {
+    this.currentSensorType = r.type; this.lastId = r;
+    bus.emit('didFinishIdentification', r);
+    if (r.type !== SensorType.Unknown) { this.createSensorWithType(r.type); bus.emit('pluggedIn', r); }
+    else bus.emit('pluggedOut', r);
+  }
+  createSensorWithType(t) {
+    const C = { [SensorType.Fields]: FieldSensor, [SensorType.Nitrates]: NitratesSensor, [SensorType.Radiation]: RadiationSensor, [SensorType.Humidity]: HumiditySensor }[t];
+    this.sensor = new C(this.io, this.settings);
+  }
+  removeSensor() { if (this.sensor) { this.sensor.destroy(); this.sensor = null; } if (this.identificator) this.identificator.abort(); this.currentSensorType = SensorType.Unknown; }
+}
+
+/* ---------------- WEB: virtual sensor (demo mode / self-test) ----------------
+ * Produces a microphone signal from the current output parameters, so the whole
+ * DSP path (FFT, identification, state machines) runs exactly as with hardware. */
+class SimIO extends AudioIO {
+  constructor(kind) { super(); this.mode = 'sim'; this.kind = 'Демо'; this.sim = new VirtualSensor(kind); }
+  async start() {
+    this.sr = 48000; this.inLatency = 0; this.ctx = null; this.holdBlocks = 2; this.latency = 0.04; this.inputLabel = 'виртуальный датчик';
+    this.delay = []; this.t0 = performance.now(); this.produced = 0; this.running = true;
+    this.timer = setInterval(() => {
+      const due = Math.floor((performance.now() - this.t0) / 1000 * this.sr / N_FRAMES);
+      let k = 0;
+      while (this.produced < due && k++ < 8) { this.produced++; this._tick(); }
+      if (this.produced < due) this.produced = due;
+    }, 10);
+  }
+  updateHold() { this.holdBlocks = 2; }
+  stop() { this.running = false; clearInterval(this.timer); }
+  _tick() {
+    this.delay.push(Object.assign({}, this.p)); const p = this.delay.length > 1 ? this.delay.shift() : this.p;  // one block of latency
+    this._block(this.sim.render(p, this.sr, N_FRAMES));
+  }
+}
+class VirtualSensor {
+  constructor(kind) {
+    this.kind = kind; this.idMode = false; this.ph = 0; this.n = 0; this.last = ''; this.since = 0; this.after00 = 0; this.zeroRun = 0;
+    this.T = 22.5; this.H = 46; this.product = false; this.productN = 140; this.field = { lf: 0.9, hf: 0.6 }; this.cpm = 9;
+  }
+  render(p, sr, n) {
+    const x = new Float32Array(n), on = p.on ? p.gain : 0;
+    const key = (p.aL > 0.5 ? 1 : p.aL > 0.1 ? 2 : 0) + ':' + (p.aR > 0.5 ? 1 : 0);
+    const dt = n / sr;
+    if (key !== this.last) { this.after00 = this.last === '0:0' ? this.zeroRun : 0; this.last = key; this.since = 0; if (key === '0:0') this.zeroRun = 0; }
+    this.since += dt; if (key === '0:0') this.zeroRun += dt;
+    const fresh = this.since < 0.35 && this.after00 > 0.3;
+    let lvl = 0, extra = null;
+    const [L, R] = key.split(':').map(Number);
+    const bits = { Fields: '1110', Radiation: '1100', Humidity: '1011', Organic: '1010' }[this.kind];
+    if (!on) lvl = 0;
+    else if (this.idMode) {
+      const idx = (R === 1 ? 2 : 0) + (L === 1 ? 1 : 0);   // left "zero" is 0.2 during identification
+      lvl = bits[idx] === '1' ? 0.3 : 0.03;
+    } else if (this.kind === 'Humidity') {
+      const P = PROFILES.iPhone5.hum, T = this.T + Math.sin(this.n / 400) * 0.3, H = this.H + Math.sin(this.n / 230) * 1.5;
+      const rT = (P[1] - T) / P[0], rH = (H / 100 * (1.0546 - 0.00216 * T)) * P[3] + P[2];
+      if (L === 0 && R === 1) lvl = fresh ? 0.30 : 0.30 * rT; else if (L === 1 && R === 1) lvl = fresh ? 0.28 : 0.28 * rH; else lvl = 0.004;
+    } else if (this.kind === 'Organic') {
+      const P = PROFILES.iPhone5.nit, T = this.T, U2 = 0.25;
+      if (L === 0 && R === 1) lvl = fresh ? U2 : U2 * (P[2] - T) / P[1];
+      else if (L === 1 && R === 1) { const N = this.product ? this.productN : 0.5; lvl = U2 / (1 + N / (4 * P[0] * (1 - 0.01 * (T - 20)))); }
+      else lvl = 0.004;
+    } else if (this.kind === 'Fields') {
+      const s = 2.5, wob = 0.15 + 0.85 * (0.5 - 0.5 * Math.cos(this.n / 45));  // slow sweep: sensor moved towards a source and back
+      const lf = Math.log(1 + this.field.lf * wob / EMF.LF_K2) / EMF.LF_K1 / s, hf = Math.log(1 + this.field.hf * wob / EMF.HF_K2) / EMF.HF_K1 / s;
+      extra = { base: [0.04, 0.025], sig: L === 1 && R === 1 ? lf : (L === 0 && R === 1 ? hf : 0) };
+    } else if (this.kind === 'Radiation') { lvl = 0.02; }
+    // synthesize carrier at the output frequency with stable phase
+    const w = 2 * Math.PI * p.fL / sr;
+    for (let i = 0; i < n; i++) {
+      let v;
+      if (extra) {
+        // base crosstalk vector + signal vector at 60° from it (noise-vector correction sees the difference)
+        v = extra.base[0] * Math.cos(this.ph) + extra.base[1] * Math.sin(this.ph) + extra.sig * 2 * Math.cos(this.ph + 1.05) * on;
+      } else v = 2 * lvl * Math.cos(this.ph) * (on ? 1 : 0);
+      x[i] = v + (Math.random() - 0.5) * 0.002; this.ph += w;
+    }
+    this.ph %= 2 * Math.PI;
+    if (this.kind === 'Radiation' && on && !this.idMode && L === 1 && R === 1 && Math.random() < this.cpm / 60 * dt) {
+      const at = Math.floor(Math.random() * (n - 60)); for (let j = 0; j < 60; j++) x[at + j] += 0.6 * Math.exp(-j / 12) * (j < 2 ? j / 2 : 1);
+    }
+    this.n++; return x;
+  }
+}
+
+if (typeof module !== 'undefined') module.exports = { AudioIO, SimIO, SensorManager, SensorType, SensorTypeName, SensorState, FieldType, PROFILES, bus, Identificator };
+
+</script>
+<script>
+"use strict";
+/* ================= data from the original app (Filters*.plist) ================= */
+const T = SensorType;
+const FILTERS = {
+  [T.Radiation]: [
+    ['daily', 'Повседневно', { max: 0.5 }], ['home', 'Дом', { max: 1.5 }], ['baby', 'Детская', { max: 0.15 }], ['airplane', 'Самолёт', { max: 7 }],
+    ['natural', 'Природный фон', { max: 0.3 }], ['water', 'Вода', { max: 0.3 }], ['travel', 'Поездки', { max: 0.3 }], ['x-ray', 'Рентген', { max: 1.0 }]],
+  [T.Fields]: [
+    ['home', 'Дом', { hf: 3 }], ['office_fields', 'Офис', { hf: 4 }], ['sleep', 'Спальня', { hf: 1.5 }], ['baby', 'Детская', { hf: 1 }],
+    ['kitchen', 'Кухня', { hf: 3 }], ['mobile', 'Телефон', { hf: 4 }], ['cellular-antenna', 'Вышка связи', { hf: 5 }], ['zen', 'Дзен', { hf: 0.1 }],
+    ['lamp', 'Лампа', { lf: 2 }], ['wires', 'Проводка', { lf: 2 }], ['transport', 'Транспорт', { lf: 3 }], ['lf-fields', 'НЧ-поля', { lf: 10 }], ['hi-fields', 'ВЧ-поля', { hf: 20 }]],
+  [T.Humidity]: [
+    ['home', 'Дом', [35, 60, 18, 25]], ['office_humidity', 'Офис', [40, 55, 22, 25]], ['sleep', 'Спальня', [45, 50, 15, 20]], ['baby', 'Детская', [48, 52, 20, 22]],
+    ['public', 'Общественное место', [30, 70, 20, 30]], ['outdoor', 'Улица', [30, 80, -20, 60]], ['airplane', 'Самолёт', [15, 50, 15, 30]], ['wine', 'Вино', [70, 76, 10, 13]],
+    ['cheese', 'Сыр', [85, 90, 10, 12]], ['conditioner', 'Кондиционер', [40, 70, 10, 40]], ['allergy', 'Аллергия', [20, 80, -20, 30]], ['hot', 'Жара', [20, 60, -20, 40]], ['cold', 'Холод', [20, 80, -20, 40]]],
+  [T.Nitrates]: [
+    ['apple', 'Яблоко', 60], ['pear', 'Груша', 60], ['banana', 'Банан', 200], ['strawberry', 'Клубника', 200], ['melon', 'Дыня', 90], ['watermelon', 'Арбуз', 200],
+    ['tomato', 'Томат', 300], ['cucumber', 'Огурец', 400], ['sweet-pepper', 'Сладкий перец', 250], ['eggplant', 'Баклажан', 300], ['potato', 'Картофель', 250],
+    ['carrot', 'Морковь', 400], ['onion', 'Лук', 80], ['avocado', 'Авокадо', 400], ['pumpkin', 'Тыква', 200], ['beet', 'Свёкла', 1400], ['radish', 'Редис', 1500],
+    ['broccoli', 'Брокколи', 2000], ['cauliflower', 'Цветная капуста', 2000], ['lettuce', 'Салат', 2000], ['celery', 'Сельдерей', 2000], ['corn', 'Кукуруза', 35], ['asparagus', 'Спаржа', 65]],
+};
+const META = {
+  [T.Radiation]: { name: 'Radiation', sub: 'Счётчик Гейгера, бета- и гамма-излучение', icon: 'id-radiation', unit: 'мкЗв/ч', kind: 'Radiation' },
+  [T.Fields]: { name: 'EMF', sub: 'Электромагнитные поля: НЧ 50 Гц–500 кГц, ВЧ 0.5–3000 МГц', icon: 'id-emf', unit: 'В/м', kind: 'Fields' },
+  [T.Humidity]: { name: 'Humidity', sub: 'Влажность и температура, датчик Honeywell HIH-4000', icon: 'id-humidity', unit: '% отн. влажности', kind: 'Humidity' },
+  [T.Nitrates]: { name: 'Organic', sub: 'Нитраты во фруктах и овощах, щуп из нержавейки', icon: 'id-organic', unit: 'ppm NO₃', kind: 'Organic' },
+};
+
+/* ================= settings & journal (per browser) ================= */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('lapka.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('lapka.' + k, JSON.stringify(v)); } catch (e) {} },
+};
+const settings = Object.assign({ outputLevel: 1, profile: 'iPhone5', extraLatencyMs: 0, emfScale: null, radCoef: 1, emfCalTime: 40, inputDevice: '', workLevel: 1 },
+  store.get('settings', {}));
+const saveSettings = () => store.set('settings', settings);
+
+/* ================= state ================= */
+const S = { io: null, mgr: new SensorManager(settings), mode: 'off', id: null, idStep: 0, type: T.Unknown,
+  phase: 'ready', filter: {}, last: null, inter: null, calStart: 0, calTime: 0, fieldType: FieldType.High, amp: 0, wake: null };
+S.filter = store.get('filters', {});
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const img = (k, cls = '', alt = '') => ASSETS[k] ? `<img src="${ASSETS[k]}" class="${cls}" alt="${esc(alt)}">` : '';
+function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3200); }
+
+function setStatus() {
+  const st = $('status'); let cls = '', txt = 'Микрофон выключен';
+  if (S.io && S.io.running) {
+    cls = 'on';
+    txt = S.io.mode === 'sim' ? `Демо: виртуальный датчик ${S.io.sim.kind === 'Fields' ? 'EMF' : S.io.sim.kind === 'Organic' ? 'Organic' : S.io.sim.kind}` : `${S.io.inputLabel || 'Микрофон'} · ${S.io.sr} Гц`;
+    if (S.io.peak > 0.98) { cls = 'err'; txt = 'Перегрузка входа: уменьшите уровень микрофона в системе'; }
+  }
+  st.innerHTML = `<span class="dot ${cls}"></span><span>${esc(txt)}</span>`;
+}
+
+/* ================= audio start / stop ================= */
+async function startAudio(demoKind) {
+  stopAudio();
+  try {
+    S.io = demoKind ? new SimIO(demoKind) : new AudioIO();
+    S.io.extraLatencyMs = settings.extraLatencyMs;
+    await S.io.start(settings.inputDevice);
+    S.io.updateHold();
+    S.mgr.attach(S.io);
+    S.mode = 'idle'; S.id = null; render(); setStatus();
+    identify();
+  } catch (e) {
+    console.error(e); S.io = null; S.mode = 'off'; render(); setStatus();
+    const name = e && e.name;
+    toast(name === 'NotAllowedError' ? 'Нет доступа к микрофону. Разрешите его в настройках браузера.' :
+          name === 'NotFoundError' ? 'Микрофон не найден. Подключите датчик через разъём с поддержкой гарнитуры.' :
+          'Не удалось запустить звук: ' + (e.message || e));
+  }
+}
+function stopAudio() {
+  try { S.mgr.removeSensor(); } catch (e) {}
+  if (S.io) S.io.stop(); S.io = null; S.mode = 'off'; S.type = T.Unknown; releaseWake();
+}
+function identify() {
+  if (!S.io) return;
+  S.mode = 'identifying'; S.id = null; S.idStep = 0; S.type = T.Unknown; S.phase = 'ready'; S.last = null; S.inter = null;
+  render(); S.mgr.identify();
+}
+async function holdWake() { try { S.wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function releaseWake() { try { S.wake && S.wake.release(); } catch (e) {} S.wake = null; }
+
+/* ================= engine events ================= */
+bus.on('id-progress', d => { S.idStep = d.step; S.idPass = d.pass; if (S.mode === 'identifying') renderBits(); });
+bus.on('didFinishIdentification', r => {
+  S.id = r;
+  if (r.type !== T.Unknown) {
+    S.type = r.type; settings.workLevel = r.level; S.mode = 'sensor'; S.phase = 'ready'; S.last = null; S.inter = null;
+    S.fieldType = FieldType.High;
+    render();
+    if (r.weak) toast('Сигнал датчика слабее, чем на iPhone. Проверьте громкость системы.');
+  } else { S.mode = 'unknown'; render(); }
+});
+bus.on('willStartCalibration', d => { S.phase = 'calibrating'; S.calStart = performance.now(); S.calTime = d.time; renderSensorDynamic(); tickRing(); });
+bus.on('didCompleteCalibration', () => {
+  const s = S.mgr.sensor; if (!s) return;
+  if (S.type === T.Nitrates) { S.phase = 'calibrated'; renderSensorDynamic(); return; }
+  if (S.type === T.Fields) s.updateWithFieldType(S.fieldType);
+  s.startMeasure();
+});
+bus.on('didCancelCalibration', () => { S.phase = 'ready'; renderSensorDynamic(); });
+bus.on('willStartMeasure', () => { S.phase = 'measuring'; holdWake(); renderSensorDynamic(); });
+bus.on('didCompleteMeasure', () => { if (S.fieldSwitching) return; S.phase = S.last ? 'done' : (S.type === T.Nitrates ? 'calibrated' : 'ready'); releaseWake(); renderSensorDynamic(); });
+bus.on('value', d => { S.last = d; renderValue(); });
+bus.on('intermediate', d => { S.inter = d; renderValue(); });
+bus.on('particle', () => spawnParticle());
+bus.on('amp', a => { S.amp = a; });
+
+/* ================= rendering ================= */
+function render() {
+  const v = $('view');
+  if (S.mode === 'off') v.innerHTML = viewWelcome();
+  else if (S.mode === 'identifying' || S.mode === 'idle' || S.mode === 'unknown') v.innerHTML = viewIdent();
+  else if (S.mode === 'sensor') { v.innerHTML = viewSensor(); renderSensorDynamic(); renderValue(); }
+  bind();
+}
+function viewWelcome() {
+  return `<section class="hero">
+    <div class="devices">${img('id-radiation', '', 'Radiation')}${img('id-emf', '', 'EMF')}${img('id-humidity', '', 'Humidity')}${img('id-organic', '', 'Organic')}</div>
+    <h1>Вставьте датчик Lapka в разъём наушников</h1>
+    <p>Датчик питается от звукового сигнала и отвечает через микрофонный контакт. Подойдёт разъём для гарнитуры на компьютере или Android и переходник USB-C на 3.5 мм с микрофоном.</p>
+    <div class="row"><button class="pill light" id="btnStart">Начать</button></div>
+    <div><p style="margin-bottom:8px">Нет датчика под рукой? Демо с виртуальным датчиком:</p>
+    <div class="demo-pick">${['Radiation', 'Fields', 'Humidity', 'Organic'].map(k => `<button data-demo="${k}">${k === 'Fields' ? 'EMF' : k}</button>`).join('')}</div></div>
+  </section>
+  <div class="tips">
+    <div><b>1</b><span>Не надевайте наушники: на выход идёт громкий тон 16–19 кГц.</span></div>
+    <div><b>2</b><span>Поставьте системную громкость на максимум. В Windows отключите «Улучшения звука» у микрофона и динамиков.</span></div>
+    <div><b>3</b><span>После нажатия «Начать» разрешите доступ к микрофону. Тип датчика определится сам.</span></div>
+  </div>`;
+}
+function viewIdent() {
+  const busy = S.mode === 'identifying', r = S.id;
+  let note = 'Пока датчик определяется, приложение перебирает четыре комбинации сигналов в левом и правом каналах.';
+  if (S.mode === 'unknown' && r) note = `Датчик не распознан (код ${r.sid}). Проверьте, что громкость на максимуме, штекер вставлен до конца, а в настройках выбран микрофон гарнитуры. Если это не помогает, увеличьте «Задержку тракта».`;
+  return `<section class="ident">
+    <button class="bigbtn" id="btnIdent" ${busy ? 'disabled' : ''} aria-label="Определить датчик">
+      <span class="lbl ${busy ? 'blink' : ''}">${busy ? 'Слушаю' : (S.mode === 'unknown' ? 'Ещё раз' : 'Определить')}<small>${busy ? 'датчик' : (S.mode === 'unknown' ? 'определить' : 'датчик')}</small></span></button>
+    <div class="bits" id="bits"></div>
+    <div class="idnote">${esc(note)}</div>
+  </section>`;
+}
+function renderBits() {
+  const b = $('bits'); if (!b) return;
+  const r = S.id, cells = [0, 1, 2, 3].map(i => {
+    if (r && r.sid) return `<span class="v${r.sid[i]}">${r.sid[i]}</span>`;
+    return `<span class="${S.mode === 'identifying' && i === S.idStep ? 'cur' : ''}">·</span>`;
+  });
+  b.innerHTML = cells.join('');
+}
+function filtersFor(t) { return FILTERS[t] || []; }
+function currentFilter() {
+  const list = filtersFor(S.type), key = S.filter[S.type];
+  let f = list.find(x => x[0] === key);
+  if (S.type === T.Fields && f) { const lim = f[2]; if ((S.fieldType === FieldType.Low && !lim.lf) || (S.fieldType === FieldType.High && !lim.hf)) f = null; }
+  return f || (S.type === T.Fields ? list.find(x => S.fieldType === FieldType.Low ? x[2].lf : x[2].hf) : list[0]);
+}
+function viewSensor() {
+  const m = META[S.type];
+  const seg = S.type === T.Fields ? `<div class="seg" role="group" aria-label="Диапазон">
+      <button data-ft="0" aria-pressed="${S.fieldType === FieldType.Low}">НЧ · 50 Гц</button><button data-ft="1" aria-pressed="${S.fieldType === FieldType.High}">ВЧ · сотовая, Wi-Fi</button></div>` : '';
+  const list = filtersFor(S.type).filter(f => S.type !== T.Fields || (S.fieldType === FieldType.Low ? f[2].lf : f[2].hf));
+  const cur = currentFilter();
+  return `<section class="band">${img(m.icon, '', m.name)}<div class="t"><h2>${m.name}</h2><p>${esc(m.sub)}</p></div>
+      <button class="x" id="btnReident" title="Определить заново">Другой датчик</button></section>
+    <section class="meter" id="meter"><canvas id="particles"></canvas>
+      ${seg}
+      <div class="value dim" id="val">—</div><div class="unit" id="unit">${esc(m.unit)}</div>
+      <div class="sub" id="sub"></div>
+      <div id="verdict"></div>
+    </section>
+    <section class="controls">
+      <button class="bigbtn" id="btnSense"><svg class="ring" viewBox="0 0 168 168"><circle cx="84" cy="84" r="80" stroke="var(--line)"/><circle id="ringArc" cx="84" cy="84" r="80" stroke="var(--ink)" stroke-dasharray="502.65" stroke-dashoffset="502.65" stroke-linecap="round"/></svg><span class="lbl" id="senseLbl"></span></button>
+      <div class="hint" id="hint"></div>
+      <div class="after" id="after"></div>
+    </section>
+    <section class="filters"><h3>${S.type === T.Nitrates ? 'Продукт' : 'Где измеряем'}</h3>
+      <div class="strip" role="group">${list.map(f => `<button class="chip" data-filter="${f[0]}" aria-pressed="${cur && cur[0] === f[0]}">${img('f-' + f[0], '', '')}<span>${esc(f[1])}</span></button>`).join('')}</div>
+      <div class="limit" id="limit"></div></section>`;
+}
+function limitText() {
+  const f = currentFilter(); if (!f) return '';
+  const L = f[2];
+  if (S.type === T.Radiation) return `Норма для «${f[1]}»: до ${L.max} мкЗв/ч`;
+  if (S.type === T.Fields) return `Норма для «${f[1]}»: до ${S.fieldType === FieldType.Low ? L.lf : L.hf} В/м`;
+  if (S.type === T.Humidity) return `Комфорт для «${f[1]}»: влажность ${L[0]}–${L[1]} %, температура ${L[2]}…${L[3]} °C`;
+  if (S.type === T.Nitrates) return `Допустимо для «${f[1]}»: до ${L} ppm NO₃`;
+}
+function verdictOf() {
+  const f = currentFilter(), d = S.last; if (!f || !d) return null;
+  const L = f[2], grade = (v, max, k) => v <= max ? 'yes' : v <= max * k ? 'almost' : 'no';
+  if (S.type === T.Radiation) return grade(d.value, L.max, 1.5);
+  if (S.type === T.Fields) return grade(d.value, S.fieldType === FieldType.Low ? L.lf : L.hf, 1.5);
+  if (S.type === T.Nitrates) return grade(d.value, L, 1.3);
+  if (S.type === T.Humidity) {
+    const h = d.humidity, t = d.temperature, inR = (x, a, b, m) => x >= a - m && x <= b + m;
+    if (inR(h, L[0], L[1], 0) && inR(t, L[2], L[3], 0)) return 'yes';
+    if (inR(h, L[0], L[1], 8) && inR(t, L[2], L[3], 2)) return 'almost'; return 'no';
+  }
+}
+const VERDICT_TEXT = { yes: 'В норме', almost: 'На грани нормы', no: 'Выше нормы' };
+const HUM_TEXT = { yes: 'Комфортно', almost: 'Почти комфортно', no: 'Некомфортно' };
+const fmt = (v, d) => (v == null || !isFinite(v)) ? '—' : v.toFixed(d).replace('.', ',');
+function mmss(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+function renderValue() {
+  if (S.mode !== 'sensor') return;
+  const val = $('val'), sub = $('sub'), d = S.last, ver = $('verdict'); if (!val) return;
+  let main = '—', subs = [];
+  if (S.type === T.Radiation) {
+    if (d) { main = fmt(d.value, 2); subs = [[d.particles, 'частиц'], [fmt(d.cpm, 0), 'в минуту'], [mmss(d.time), 'время']]; }
+  } else if (S.type === T.Fields) {
+    const v = d && d.fieldType === S.fieldType ? d.value : null; main = v == null ? '—' : fmt(v, v < 10 ? 2 : 1);
+    const i = S.inter && S.inter.fieldType === S.fieldType ? S.inter.value : null;
+    if (S.phase === 'measuring') subs = [[i == null ? '—' : fmt(i, i < 10 ? 2 : 1), 'сейчас'], [S.fieldType === FieldType.Low ? 'НЧ' : 'ВЧ', 'диапазон']];
+  } else if (S.type === T.Humidity) {
+    if (d) { main = fmt(d.humidity, 0); subs = [[fmt(d.temperature, 1) + ' °C', 'температура']]; }
+  } else if (S.type === T.Nitrates) {
+    if (d) { main = fmt(d.value, 0); subs = [[fmt(d.temperature, 1) + ' °C', 'температура щупа']]; }
+  }
+  val.textContent = main; val.classList.toggle('dim', main === '—' || S.phase === 'calibrating');
+  sub.innerHTML = subs.map(s => `<div><b>${esc(s[0])}</b><span>${esc(s[1])}</span></div>`).join('');
+  const vd = (S.type === T.Fields && (!d || d.fieldType !== S.fieldType)) ? null : verdictOf();
+  ver.innerHTML = vd ? `<div class="verdict">${img('pass-' + vd, '', '')}<span>${(S.type === T.Humidity ? HUM_TEXT : VERDICT_TEXT)[vd]}</span></div>` : '';
+}
+function renderSensorDynamic() {
+  if (S.mode !== 'sensor') return;
+  const lbl = $('senseLbl'), hint = $('hint'), after = $('after'), btn = $('btnSense'); if (!lbl) return;
+  const p = S.phase, t = S.type; let L = '', small = '', H = '', A = '';
+  if (p === 'ready') {
+    L = t === T.Nitrates ? 'Калибровка' : 'Старт';
+    H = { [T.Radiation]: 'Положите датчик на измеряемую поверхность или держите в воздухе. Счёт частиц начнётся после 4 секунд подготовки.',
+          [T.Fields]: 'Начните вдали от приборов: первые секунды задают нулевой уровень. Затем подносите датчик к источнику.',
+          [T.Humidity]: 'Держите датчик в воздухе, не касаясь его рукой. Калибровка занимает около 11 секунд.',
+          [T.Nitrates]: 'Щуп должен быть чистым и сухим, в воздухе. Калибровка занимает около 10 секунд.' }[t];
+  } else if (p === 'calibrating') {
+    const left = Math.max(0, Math.ceil(S.calTime - (performance.now() - S.calStart) / 1000));
+    L = String(left); small = 'калибровка'; H = 'Не трогайте датчик до конца калибровки.';
+  } else if (p === 'calibrated') {
+    L = 'Измерить'; H = 'Вставьте щуп в продукт на всю длину и нажмите «Измерить». Замер длится около 5 секунд.';
+  } else if (p === 'measuring') {
+    if (t === T.Nitrates) { L = '…'; small = 'замер'; H = 'Держите щуп в продукте неподвижно.'; }
+    else { L = 'Стоп'; small = 'идёт замер'; H = t === T.Radiation ? 'Чем дольше замер, тем точнее результат. Рекомендуется не меньше 1–2 минут.' : t === T.Fields ? 'Медленно водите датчиком вокруг прибора, держа его примерно в 5 см.' : 'Значения обновляются примерно раз в секунду.'; }
+  } else if (p === 'done') {
+    L = t === T.Nitrates ? 'Ещё раз' : 'Заново'; H = t === T.Nitrates ? 'Протрите щуп перед следующим продуктом.' : '';
+    A = `<button class="pill small" id="btnSave">Сохранить в журнал</button>`;
+  }
+  lbl.innerHTML = `${esc(L)}${small ? `<small>${esc(small)}</small>` : ''}`;
+  lbl.classList.toggle('blink', p === 'measuring' && t !== T.Nitrates);
+  btn.disabled = (t === T.Nitrates && p === 'measuring');
+  hint.textContent = H; after.innerHTML = A;
+  $('limit').textContent = limitText();
+  const btnSave = $('btnSave'); if (btnSave) btnSave.onclick = saveEntry;
+  if (p !== 'calibrating') setRing(p === 'measuring' || p === 'done' || p === 'calibrated' ? 1 : 0);
+}
+function setRing(f) { const a = $('ringArc'); if (a) a.setAttribute('stroke-dashoffset', String(502.65 * (1 - Math.min(1, f)))); }
+function tickRing() {
+  if (S.phase !== 'calibrating' || S.mode !== 'sensor') return;
+  const f = (performance.now() - S.calStart) / 1000 / S.calTime; setRing(Math.min(f, 0.98));
+  const lbl = $('senseLbl'); if (lbl) { const left = Math.max(0, Math.ceil(S.calTime - (performance.now() - S.calStart) / 1000)); lbl.firstChild && (lbl.firstChild.textContent = String(left)); }
+  requestAnimationFrame(tickRing);
+}
+function onSense() {
+  const s = S.mgr.sensor; if (!s) return;
+  const p = S.phase;
+  if (p === 'ready') { S.last = null; S.inter = null; renderValue(); s.startCalibration(); }
+  else if (p === 'calibrating') { s.cancelCalibration(); }
+  else if (p === 'calibrated') { S.last = null; renderValue(); s.startMeasure(); }
+  else if (p === 'measuring') { s.stopMeasure(); }
+  else if (p === 'done') {
+    if (S.type === T.Nitrates) { S.last = null; renderValue(); s.startMeasure(); }
+    else { S.last = null; S.inter = null; if (S.type === T.Radiation || S.type === T.Humidity) { s.resetCalibration(); s.startCalibration(); } else s.startMeasure(); renderValue(); }
+  }
+}
+function switchField(ft) {
+  if (ft === S.fieldType) return;
+  const s = S.mgr.sensor; S.fieldType = ft; S.inter = null; if (S.last && S.last.fieldType !== ft) S.last = null;
+  if (s) {
+    if (S.phase === 'measuring') { S.fieldSwitching = true; s.stopMeasure(); s.updateWithFieldType(ft); s.startMeasure(); S.fieldSwitching = false; }
+    else s.updateWithFieldType(ft);
+  }
+  const m = $('view'); m.innerHTML = viewSensor(); renderSensorDynamic(); renderValue(); bind();
+}
+
+/* ---- radiation particles (particle@2x from the original) ---- */
+const P = []; let pAnim = false; const partImg = new Image(); partImg.src = ASSETS['particle'] || '';
+function spawnParticle() {
+  const c = $('particles'); if (!c) return;
+  for (let i = 0; i < 7; i++) P.push({ x: Math.random(), y: Math.random(), r: 3 + Math.random() * 5, t: performance.now(), vx: (Math.random() - .5) * .04, vy: (Math.random() - .5) * .04 });
+  if (!pAnim && !matchMedia('(prefers-reduced-motion: reduce)').matches) { pAnim = true; requestAnimationFrame(drawParticles); }
+}
+function drawParticles(now) {
+  const c = $('particles'); if (!c) { pAnim = false; P.length = 0; return; }
+  const r = devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+  if (c.width !== w * r) { c.width = w * r; c.height = h * r; }
+  const g = c.getContext('2d'); g.setTransform(r, 0, 0, r, 0, 0); g.clearRect(0, 0, w, h);
+  for (let i = P.length - 1; i >= 0; i--) {
+    const p = P[i], age = (now - p.t) / 1600; if (age > 1) { P.splice(i, 1); continue; }
+    g.globalAlpha = 1 - age; g.beginPath(); g.fillStyle = '#151515';
+    g.arc((p.x + p.vx * age) * w, (p.y + p.vy * age) * h, p.r * (1 - age * .4), 0, Math.PI * 2); g.fill();
+  }
+  g.globalAlpha = 1;
+  if (P.length) requestAnimationFrame(drawParticles); else pAnim = false;
+}
+
+/* ================= journal ================= */
+function saveEntry() {
+  const d = S.last; if (!d) return; const f = currentFilter();
+  const e = { t: Date.now(), type: S.type, filter: f ? f[0] : null, fname: f ? f[1] : '', verdict: verdictOf(), ft: S.fieldType };
+  if (S.type === T.Humidity) { e.value = d.humidity; e.temp = d.temperature; } else e.value = d.value;
+  if (S.type === T.Radiation) { e.cpm = d.cpm; e.time = d.time; }
+  if (S.io && S.io.mode === 'sim') e.demo = true;
+  const log = store.get('log', []); log.unshift(e); store.set('log', log.slice(0, 300));
+  toast('Сохранено в журнал');
+}
+function entryText(e) {
+  if (e.type === T.Radiation) return [fmt(e.value, 2), 'мкЗв/ч'];
+  if (e.type === T.Fields) return [fmt(e.value, 2), 'В/м ' + (e.ft === FieldType.Low ? 'НЧ' : 'ВЧ')];
+  if (e.type === T.Humidity) return [fmt(e.value, 0) + ' %', fmt(e.temp, 1) + ' °C'];
+  return [fmt(e.value, 0), 'ppm NO₃'];
+}
+function openLog() {
+  const log = store.get('log', []);
+  const rows = log.map((e, i) => { const [v, u] = entryText(e); const dt = new Date(e.t);
+    return `<div class="entry">${img(e.filter ? 'f-' + e.filter : META[e.type].icon, '', '')}
+      <div><div>${esc(META[e.type].name)} · ${esc(e.fname || '')}${e.demo ? ' <span class="m">(демо)</span>' : ''}</div>
+      <div class="m">${dt.toLocaleDateString('ru-RU')} ${dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div></div>
+      <div class="v">${e.verdict ? img('pass-' + e.verdict, 'pass', '') : ''} ${esc(v)}<div class="m">${esc(u)}</div></div></div>`; }).join('');
+  sheet(`<h2>Журнал</h2><h3>Сохранённые замеры · хранятся в этом браузере</h3>
+    <div class="log">${rows || '<div class="empty">Пока пусто. После замера нажмите «Сохранить в журнал».</div>'}</div>
+    ${log.length ? '<div class="row" style="margin-top:16px"><button class="pill ghost small" id="btnCsv">Скопировать CSV</button><button class="pill ghost small" id="btnClear">Очистить</button></div>' : ''}`);
+  const c = $('btnClear'); if (c) c.onclick = () => { if (c.dataset.sure) { store.set('log', []); closeSheet(); toast('Журнал очищен'); } else { c.dataset.sure = 1; c.textContent = 'Точно очистить?'; } };
+  const v = $('btnCsv'); if (v) v.onclick = () => {
+    const csv = 'time,sensor,place,value,unit,extra,verdict\n' + log.map(e => { const [a, u] = entryText(e); return [new Date(e.t).toISOString(), META[e.type].name, e.fname, a, u, e.temp != null ? e.temp.toFixed(1) : '', e.verdict || ''].map(x => `"${x}"`).join(','); }).join('\n');
+    navigator.clipboard.writeText(csv).then(() => toast('CSV скопирован'), () => toast('Не удалось скопировать'));
+  };
+}
+
+/* ================= settings & diagnostics ================= */
+async function openSettings() {
+  let devs = [];
+  try { devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput'); } catch (e) {}
+  const profOpts = Object.entries(PROFILES).map(([k, p]) => `<option value="${k}" ${settings.profile === k ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+  sheet(`<h2>Настройки</h2>
+    <h3>Звук</h3>
+    <div class="field"><label for="sIn">Микрофон</label><select id="sIn"><option value="">По умолчанию</option>${devs.map((d, i) => `<option value="${esc(d.deviceId)}" ${settings.inputDevice === d.deviceId ? 'selected' : ''}>${esc(d.label || 'Микрофон ' + (i + 1))}</option>`).join('')}</select>
+      <div class="help">Выберите вход гарнитуры или USB-переходника. Названия появятся после первого разрешения микрофона.</div></div>
+    <div class="field"><label for="sLvl">Уровень сигнала</label><input type="range" id="sLvl" min="0.3" max="1" step="0.01" value="${settings.outputLevel}">
+      <div class="help">Цифровой уровень тона. Если датчик не распознаётся с первой попытки, приложение повторит её на 100 %, как оригинал делал для европейских iPhone. Сейчас: <span id="sLvlV">${Math.round(settings.outputLevel * 100)}</span> %</div></div>
+    <div class="field"><label for="sLat">Задержка тракта, мс</label><input type="number" id="sLat" min="0" max="500" step="10" value="${settings.extraLatencyMs}">
+      <div class="help">Прибавляется к задержке, которую сообщает браузер. Увеличьте, если на Bluetooth- или USB-аудио датчик определяется нестабильно.</div></div>
+    <h3>Калибровка</h3>
+    <div class="field"><label for="sProf">Коэффициенты как на</label><select id="sProf">${profOpts}</select>
+      <div class="help">Оригинальные таблицы K1…K5 для влажности, нитратов и ЭМП, подобранные под модели iPhone. Влажность и нитраты считаются через отношения сигналов, поэтому от громкости зависят слабо.</div></div>
+    <div class="field"><label for="sEmf">Масштаб ЭМП</label><input type="number" id="sEmf" step="0.1" min="0.1" max="20" value="${settings.emfScale != null ? settings.emfScale : (PROFILES[settings.profile] || PROFILES.iPhone5).emfScale}">
+      <div class="help">scaleCoef оригинала. Зависит от чувствительности микрофонного входа. Подберите по эталонному прибору.</div></div>
+    <div class="field"><label for="sEmfT">Калибровка ЭМП, с</label><input type="number" id="sEmfT" min="5" max="60" step="5" value="${settings.emfCalTime}">
+      <div class="help">В оригинале 40 секунд.</div></div>
+    <div class="field"><label for="sRad">Поправка дозы</label><input type="number" id="sRad" step="0.05" min="0.1" max="10" value="${settings.radCoef}">
+      <div class="help">Множитель к формуле оригинала: 0,04 мкЗв/ч на импульс в минуту.</div></div>
+    <h3>Диагностика</h3>
+    <pre class="diag" id="diag"></pre>
+    <div class="row" style="margin-top:14px">${S.io ? '<button class="pill ghost small" id="btnOff">Выключить звук</button>' : ''}<button class="pill ghost small" id="btnLab">Ручной режим</button></div>
+    <div id="lab"></div>`);
+  $('sIn').onchange = e => { settings.inputDevice = e.target.value; saveSettings(); if (S.io && S.io.mode !== 'sim') { closeSheet(); startAudio(); } };
+  $('sLvl').oninput = e => { settings.outputLevel = +e.target.value; $('sLvlV').textContent = Math.round(settings.outputLevel * 100); saveSettings(); };
+  $('sLat').onchange = e => { settings.extraLatencyMs = +e.target.value || 0; saveSettings(); if (S.io) { S.io.extraLatencyMs = settings.extraLatencyMs; S.io.updateHold(); } };
+  $('sProf').onchange = e => { settings.profile = e.target.value; settings.emfScale = null; saveSettings(); $('sEmf').value = PROFILES[settings.profile].emfScale; toast('Применится к следующему датчику'); };
+  $('sEmf').onchange = e => { settings.emfScale = +e.target.value; saveSettings(); const s = S.mgr.sensor; if (s && s.type === T.Fields) s.scaleCoef = settings.emfScale; };
+  $('sEmfT').onchange = e => { settings.emfCalTime = +e.target.value || 40; saveSettings(); };
+  $('sRad').onchange = e => { settings.radCoef = +e.target.value || 1; saveSettings(); };
+  const off = $('btnOff'); if (off) off.onclick = () => { stopAudio(); closeSheet(); render(); setStatus(); };
+  $('btnLab').onclick = openLab;
+  const upd = () => { const d = $('diag'); if (!d) return; d.textContent = diagText(); setTimeout(upd, 300); }; upd();
+}
+function diagText() {
+  const io = S.io, r = S.id || S.mgr.lastId, s = S.mgr.sensor;
+  const lines = [];
+  if (!io) lines.push('Звук выключен');
+  else {
+    lines.push(`Ввод/вывод: ${io.kind}, ${io.sr} Гц, блок 1024`);
+    lines.push(`Задержка: ${(io.latency * 1000 || 0).toFixed(0)} мс → пропуск ${io.holdBlocks} блоков после смены сигнала`);
+    lines.push(`Выход: L ${(+io.p.aL).toFixed(2)} @ ${io.p.fL.toFixed(0)} Гц, R ${(+io.p.aR).toFixed(2)} @ ${io.p.fR.toFixed(0)} Гц, противофаза ${io.p.anti ? 'да' : 'нет'}, уровень ${(io.p.gain * 100).toFixed(0)} %, ${io.p.on ? 'вкл' : 'выкл'}`);
+    lines.push(`Вход: пик ${io.peak.toFixed(3)}, амплитуда на несущей ${S.amp.toFixed(4)}`);
+  }
+  if (r) lines.push(`Определение: код ${r.sid} → ${SensorTypeName[r.type]}, отпечаток ${r.fingerprint.map(x => x.toFixed(3)).join(' / ')}, порог ${r.threshold.toFixed(3)}, уровень ${Math.round(r.level * 100)} %${r.weak ? ', сигнал слабый' : ''}`);
+  if (s && s.type === T.Humidity && s.calibratingLevel) lines.push(`Влажность: U1 ${s.calibratingLevel.toFixed(4)}, U4 ${(s.secondCalibratingLevel || 0).toFixed(4)}, K ${[s.K1, s.K2, s.K3, s.K4, s.K5].join(' ')}`);
+  if (s && s.type === T.Nitrates && s.calibration_level) lines.push(`Нитраты: U2 ${s.calibration_level.toFixed(4)}, T ${s.temperature.toFixed(1)} °C, фон ${s.empty_nitrates.toFixed(1)}, K ${[s.K1, s.K2, s.K3, s.K4].join(' ')}`);
+  if (s && s.type === T.Fields) lines.push(`ЭМП: scaleCoef ${s.scaleCoef}, режим ${s.fieldType ? 'ВЧ' : 'НЧ'}`);
+  return lines.join('\n');
+}
+/* manual mode: drive the output directly (L/R bits) to look at raw responses */
+function openLab() {
+  if (!S.io) { toast('Сначала нажмите «Начать» на главном экране'); return; }
+  S.mgr.removeSensor(); S.mode = 'idle'; render();
+  const sp = new SignalProcessor(S.io); sp.fftAnalyzer.meanSteps = 10; sp.leftAmplitude = 0; sp.rightAmplitude = 0; sp.start();
+  S.labSp = sp;
+  $('lab').innerHTML = `<h3>Ручной режим</h3>
+    <div class="field"><label for="lF">Частота</label><select id="lF"><option>16000</option><option selected>18000</option><option>19000</option></select></div>
+    <div class="field"><label>Левый канал</label><div class="seg" id="lL"><button data-v="0" aria-pressed="true">0</button><button data-v="0.2" aria-pressed="false">0.2</button><button data-v="1" aria-pressed="false">1</button></div></div>
+    <div class="field"><label>Правый канал</label><div class="seg" id="lR"><button data-v="0" aria-pressed="true">0</button><button data-v="1" aria-pressed="false">1</button></div></div>
+    <div class="help" style="font-size:12px;color:var(--muted);margin-top:8px">Амплитуда отклика видна в диагностике выше. Закройте окно, чтобы вернуться к определению датчика.</div>`;
+  $('lF').onchange = e => sp.setFrequency(sp.optimizeFrequency(+e.target.value));
+  const seg = (id, set) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); set(+b.dataset.v); });
+  seg('lL', v => sp.setLeftAmplitude(v)); seg('lR', v => sp.setRightAmplitude(v));
+}
+
+function sheet(html) {
+  $('layer').innerHTML = `<div class="scrim" id="scrim"></div><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}
+    <div class="row" style="margin-top:18px"><button class="pill small" id="btnClose">Закрыть</button></div></div>`;
+  $('scrim').onclick = closeSheet; $('btnClose').onclick = closeSheet;
+}
+function closeSheet() {
+  $('layer').innerHTML = '';
+  if (S.labSp) { S.labSp.stop(); S.labSp = null; if (S.io) identify(); }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+/* ================= bindings ================= */
+function bind() {
+  const q = id => $(id);
+  if (q('btnStart')) q('btnStart').onclick = () => startAudio();
+  document.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => startAudio(b.dataset.demo));
+  if (q('btnIdent')) q('btnIdent').onclick = identify;
+  if (q('btnReident')) q('btnReident').onclick = identify;
+  if (q('btnSense')) q('btnSense').onclick = onSense;
+  document.querySelectorAll('[data-ft]').forEach(b => b.onclick = () => switchField(+b.dataset.ft));
+  document.querySelectorAll('[data-filter]').forEach(b => b.onclick = () => {
+    S.filter[S.type] = b.dataset.filter; store.set('filters', S.filter);
+    document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    $('limit').textContent = limitText(); renderValue();
+  });
+  renderBits();
+}
+$('btnLog').onclick = openLog;
+$('btnSettings').onclick = openSettings;
+if (navigator.mediaDevices && navigator.mediaDevices.addEventListener)
+  navigator.mediaDevices.addEventListener('devicechange', () => { if (S.io && S.io.mode !== 'sim' && S.mode !== 'identifying') toast('Аудиоустройства изменились. Нажмите «Другой датчик», чтобы определить заново.'); });
+setInterval(setStatus, 500);
+render(); setStatus();
+
+</script>
+</body>
+</html>
